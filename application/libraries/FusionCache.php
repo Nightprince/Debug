@@ -8,7 +8,7 @@
  * @link https://github.com/Yekta-Core/FusionCMS/
  */
 
-class Cache
+class FusionCache
 {
 	private $runtimeCache;
 	private $enabled;

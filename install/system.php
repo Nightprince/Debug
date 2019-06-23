@@ -56,7 +56,7 @@ class Install
     
     private function checkPhpExtensions()
     {
-        $req = array('mysqli', 'curl', 'openssl', 'soap', 'gd', 'mbstring', 'json', 'mcrypt');
+        $req = array('mysqli', 'curl', 'openssl', 'soap', 'gd', 'mbstring', 'json');
         $loaded = get_loaded_extensions();
         $errors = array();
         
@@ -111,7 +111,7 @@ class Install
 		fwrite($owner, '<?php $config["owner"] = "'.addslashes($_POST['superadmin']).'";');
 		fclose($owner);
 
-		require_once('../application/libraries/configeditor.php');
+		require_once('../application/libraries/ConfigEditor.php');
 
 		$distConfig = '../application/config/fusion.php.dist';
 		$config = '../application/config/fusion.php';

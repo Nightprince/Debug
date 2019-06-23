@@ -65,8 +65,8 @@ class Realm
 		$this->CI = &get_instance();
 
 		// Load the objects
-		require_once('application/models/world_model.php');
-		require_once('application/models/characters_model.php');
+		require_once('application/models/World_model.php');
+		require_once('application/models/Characters_model.php');
 		
 		// Make sure the emulator is installed
 		if(file_exists('application/emulators/'.$emulator.'.php'))

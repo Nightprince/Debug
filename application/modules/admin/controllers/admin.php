@@ -16,7 +16,7 @@ class Admin extends MX_Controller
 		$this->load->library('administrator');
 
 		// Load the JSON prettifier
-		require_once('application/libraries/prettyjson.php');
+		require_once('application/libraries/Prettyjson.php');
 
 		$this->load->model('dashboard_model');
 
@@ -319,7 +319,7 @@ class Admin extends MX_Controller
 		
 		$header_url = $this->input->post('header_url');
 
-		require_once('application/libraries/configeditor.php');
+		require_once('application/libraries/ConfigEditor.php');
 		
 		$fusionConfig = new ConfigEditor("application/config/fusion.php");
 

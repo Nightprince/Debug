@@ -305,6 +305,11 @@ class MX_Loader extends CI_Loader
 		return CI::$APP->$component;
 	}
 
+	protected function _ci_object_to_array($object) 
+	{
+		return is_object($object) ? get_object_vars($object) : $object;
+	}
+
 	public function __get($class)
 	{
 		return (isset($this->controller)) ? $this->controller->$class : CI::$APP->$class;

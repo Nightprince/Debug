@@ -198,7 +198,7 @@ class Sidebox extends MX_Controller
 
 	public function saveSettings()
 	{
-		require_once('application/libraries/configeditor.php');
+		require_once('application/libraries/ConfigEditor.php');
 
 		$sidebox = $this->input->post("show_sidebox");
 

@@ -26,7 +26,7 @@ class Plugins
 		if(is_dir('application/modules/'.$this->module_name.'/plugins'))
 		{
 			// Load our plugin class
-			require_once('plugin.php');
+			require_once('Plugin.php');
 
 			$files = preg_grep('/.+_config.php$/', glob('application/modules/'.$this->module_name.'/plugins/*.php'), PREG_GREP_INVERT);
 			foreach($files as $file)

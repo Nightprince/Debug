@@ -13,7 +13,7 @@ class Settings extends MX_Controller
 		$this->load->config('performance');
 		$this->load->config('recaptcha');
 
-		require_once('application/libraries/configeditor.php');
+		require_once('application/libraries/ConfigEditor.php');
 
 		requirePermission("editSystemSettings");
 	}

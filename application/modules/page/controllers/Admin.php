@@ -5,7 +5,7 @@ class Admin extends MX_Controller
 	public function __construct()
 	{
 		// Make sure to load the administrator library!
-		$this->load->library('administrator');
+		$this->load->library('Administrator');
 		$this->load->helper('tinymce_helper');
 		$this->load->model('page_model');
 

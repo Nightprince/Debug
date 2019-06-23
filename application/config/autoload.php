@@ -58,7 +58,7 @@ $autoload['packages'] = array();
 |
 |	$autoload['libraries'] = array('user_agent' => 'ua');
 */
-$autoload['libraries'] = array('cache', 'database', 'session', 'smartyengine', 'template', 'language', 'realms', 'acl', 'user', 'logger', 'plugins', 'recaptcha');
+$autoload['libraries'] = array('FusionCache' => 'cache', 'database', 'session', 'smartyengine', 'template', 'language', 'realms', 'acl', 'user', 'logger', 'plugins', 'recaptcha');
 
 /*
 | -------------------------------------------------------------------

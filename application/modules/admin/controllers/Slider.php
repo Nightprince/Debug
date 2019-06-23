@@ -164,7 +164,7 @@ class Slider extends MX_Controller
 	{
 		requirePermission("editSlider");
 
-		require_once('application/libraries/configeditor.php');
+		require_once('application/libraries/ConfigEditor.php');
 
 		$slider = $this->input->post("show_slider");
 

@@ -9,7 +9,7 @@ class Theme extends MX_Controller
 
 		parent::__construct();
 
-		require_once('application/libraries/configeditor.php');
+		require_once('application/libraries/ConfigEditor.php');
 
 		requirePermission("changeTheme");
 	}

@@ -50,8 +50,8 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 |		my-controller/my-method	-> my_controller/my_method
 */
 // CodeIgniter
-$route['default_controller'] = "News";
-$route['404_override'] = 'Errors';
+$route['default_controller'] = "news";
+$route['404_override'] = 'errors';
 $route['translate_uri_dashes'] = FALSE;
 
 // News

@@ -36,7 +36,7 @@ class Realms
 		$this->realms = array();
 
 		// Load the realm object
-		require_once('application/libraries/realm.php');
+		require_once('application/libraries/Realm.php');
 		
 		// Load the emulator interface
 		require_once('application/interfaces/emulator.php');
@@ -326,7 +326,7 @@ class Realms
 	*/
 	public function formatAvatarPath($character)
 	{
-		if(!count($this->races_en))
+		if(!count((array)$this->races_en))
 		{
 			$this->loadConstants();
 		}
