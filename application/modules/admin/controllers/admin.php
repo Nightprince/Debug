@@ -95,14 +95,11 @@ class Admin extends MX_Controller
 
 	private function getLatestVersion()
 	{
-		try
-		{
-			$newVersion = substr(file_get_contents("https://raw.githubusercontent.com/Yekta-Core/FusionCMS/master/application/config/version.php"), 37, 5);
-		}
-		catch(Exception $e)
-		{
-			$newVersion = false;
-		}
+		$content = @file_get_contents("https://raw.githubusercontent.com/Yekta-Core/FusionCMS/master/application/config/version.php");
+		if ($content)
+		    $newVersion = substr($content, 37, 5);
+		else
+		    $newVersion = false;
 
 		if($this->template->compareVersions($newVersion, $this->config->item('FusionCMSVersion'), true))
 			return true;
