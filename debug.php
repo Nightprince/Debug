@@ -73,16 +73,9 @@ if($cms)
 			mysqli_select_db($r_char[$row['id']], $row['world_database']) or die("<div class='error'>".$row['realmName']." database error: ".mysqli_error()."</div>");
 
 			try {
-				$connect = fsockopen($row['hostname'], $row['realm_port'], $errno, $errstr, 1.5);
+				$connect = @fsockopen($row['hostname'], $row['realm_port'], $errno, $errstr, 1.5);
 
-				if($connect)
-				{
-					echo "<div>".$row['realmName'] . " is online</div>";
-				}
-				else
-				{
-					echo "<div class='error'>".$row['realmName'] . " is offline</div>";
-				}
+                echo $connect ? "<div>" . $row['realmName'] . " is online</div>" : "<div class='error'>" . $row['realmName'] . " is offline</div>";
 			}
 			catch(Exception $error)
 			{
