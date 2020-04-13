@@ -77,8 +77,8 @@ class Create extends MX_Controller
 			die("no username");
 		}
 
-		$content = $this->input->post('content');
-		$title = $this->input->post('title');
+		$content = $this->security->xss_clean($this->input->post('content'));
+		$title = $this->security->xss_clean($this->input->post('title'));
 
 		// Message must be set and more than 3 characters
 		if(!$content || strlen($content) <= 3)
@@ -98,7 +98,12 @@ class Create extends MX_Controller
 		{
 			die("invalid user");
 		}
-		
+
+		// Secure message form
+		$blacklist = array("&lt;script&gt;", "&lt;/script&gt;", "&lt;style&gt;", "&lt;/style&gt;");
+		$title     = str_replace($blacklist, "[removed]", $title);
+		$content   = str_replace($blacklist, "[removed]", $content);
+
 		// Compile it into BBcode
 		$content = $this->fusioneditor->compile($content, $this->removeTools);
 
