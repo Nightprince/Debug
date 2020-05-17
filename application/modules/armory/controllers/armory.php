@@ -13,6 +13,7 @@ class Armory extends MX_Controller
 		requirePermission("view");
 
 		$this->load->model('armory_model');
+		$this->load->library('form_validation');
 
 		$this->load->config('tooltip/tooltip_constants');
 
@@ -43,9 +44,14 @@ class Armory extends MX_Controller
 
 	public function search()
 	{
-		$string = $this->input->post("search");
+		$this->form_validation->set_rules('search', 'search', 'trim|required|min_length[2]|max_length[1000]|xss_clean');
+		$string = $this->security->xss_clean($this->input->post("search"));
 
-		if(!$string || strlen($string) <= 2)
+		if($this->form_validation->run() == FALSE)
+		{
+			die(lang("permission_denied_title", "error"));
+		}
+		else if(!$string || strlen($string) <= 2)
 		{
 			die(lang("search_too_short", "armory"));
 		}
