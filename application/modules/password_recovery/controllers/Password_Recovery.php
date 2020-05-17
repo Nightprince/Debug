@@ -10,6 +10,7 @@ class Password_Recovery extends MX_Controller
 		$this->load->model('password_recovery_model');
 
 		$this->load->helper('email_helper');
+		$this->load->library('form_validation');
 
 		$this->user->guestArea();
 		
@@ -25,13 +26,17 @@ class Password_Recovery extends MX_Controller
 	{
 		$this->template->setTitle("Password recovery");
 
-		if($this->input->post('recover_username'))
+		$username = $this->security->xss_clean($this->input->post('recover_username'));
+
+		if($username)
 		{
-			$email = $this->password_recovery_model->getEmail($this->input->post('recover_username'));
+		    $this->form_validation->set_rules('recover_username', 'recover_username', 'trim|required|min_length[4]|max_length[14]|xss_clean');
+
+			$email = $this->password_recovery_model->getEmail($username);
 			
-			if($email)
+			if($email && $this->form_validation->run() == TRUE)
 			{
-				$link = base_url().'password_recovery/requestPassword/'.$this->generateKey($this->input->post('recover_username'), $email);
+				$link = base_url().'password_recovery/requestPassword/'.$this->generateKey($username, $email);
 				sendMail($email, $this->config->item('password_recovery_sender_email'), $this->config->item('server_name').': '.lang("reset_password", "recovery"), lang("email", "recovery").' <a href="'.$link.'">'.$link.'</a>');
 
 				$this->template->view($this->template->loadPage("page.tpl", array(
