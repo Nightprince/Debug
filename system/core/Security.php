@@ -143,8 +143,19 @@ class CI_Security {
 		'<!--'            => '&lt;!--',
 		'-->'             => '--&gt;',
 		'<![CDATA['       => '&lt;![CDATA[',
-		'<comment>'	  => '&lt;comment&gt;',
-		'<%'              => '&lt;&#37;'
+		'<comment>'	      => '&lt;comment&gt;',
+		'<%'              => '&lt;&#37;',
+		'&lt;script&gt;'  => '[removed]',
+		'select *'        => '[removed]',
+		'account_data'    => '[removed]',
+		'console_username' => '[removed]',
+		'console_password' => '[removed]',
+		'override_'       => '[removed]',
+		'_database'       => '[removed]',
+		'select password' => '[removed]',
+		'account_access' => '[removed]',
+		'_permissions' => '[removed]',
+		'character_' => '[removed]'
 	);
 
 	/**
