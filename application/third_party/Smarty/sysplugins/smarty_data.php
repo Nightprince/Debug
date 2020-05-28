@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Smarty Plugin Data
  * This file contains the data object
@@ -22,7 +23,7 @@ class Smarty_Data extends Smarty_Internal_Data
      *
      * @var int
      */
-    static $count = 0;
+    public static $count = 0;
 
     /**
      * Data block name
@@ -50,7 +51,7 @@ class Smarty_Data extends Smarty_Internal_Data
     public function __construct($_parent = null, $smarty = null, $name = null)
     {
         parent::__construct();
-        self::$count ++;
+        self::$count++;
         $this->dataObjectName = 'Data_object ' . (isset($name) ? "'{$name}'" : self::$count);
         $this->smarty = $smarty;
         if (is_object($_parent)) {
@@ -61,8 +62,8 @@ class Smarty_Data extends Smarty_Internal_Data
             foreach ($_parent as $_key => $_val) {
                 $this->tpl_vars[ $_key ] = new Smarty_Variable($_val);
             }
-        } elseif ($_parent != null) {
-            throw new SmartyException("Wrong type for template variables");
+        } elseif ($_parent !== null) {
+            throw new SmartyException('Wrong type for template variables');
         }
     }
 }

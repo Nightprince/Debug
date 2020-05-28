@@ -2,284 +2,264 @@
 
 class Sidebox extends MX_Controller
 {
-	private $sideboxModules;
+    private $sideboxModules;
 
-	public function __construct()
-	{
-		// Make sure to load the administrator library!
-		$this->load->library('administrator');
-		$this->load->model('sidebox_model');
-		$this->load->library('fusioneditor');
+    public function __construct()
+    {
+        // Make sure to load the administrator library!
+        $this->load->library('administrator');
+        $this->load->model('sidebox_model');
+        $this->load->helper('tinymce_helper');
 
-		parent::__construct();
+        parent::__construct();
 
-		requirePermission("viewSideboxes");
-	}
+        requirePermission("viewSideboxes");
+    }
 
-	public function index()
-	{
-		$this->sideboxModules = $this->getSideboxModules();
+    public function index()
+    {
+        $this->sideboxModules = $this->getSideboxModules();
 
-		// Change the title
-		$this->administrator->setTitle("Sideboxes");
+        // Change the title
+        $this->administrator->setTitle("Sideboxes");
 
-		$sideboxes = $this->cms_model->getSideboxes();
+        $sideboxes = $this->cms_model->getSideboxes();
 
-		if($sideboxes)
-		{
-			foreach($sideboxes as $key => $value)
-			{
-				$sideboxes[$key]['name'] = $this->sideboxModules["sidebox_".$value['type']]['name'];
+        if ($sideboxes)
+        {
+            foreach ($sideboxes as $key => $value)
+            {
+                $sideboxes[$key]['name'] = $this->sideboxModules["sidebox_" . $value['type']]['name'];
 
-				$sideboxes[$key]['displayName'] = langColumn($sideboxes[$key]['displayName']);
+                $sideboxes[$key]['displayName'] = langColumn($sideboxes[$key]['displayName']);
 
-				if(strlen($sideboxes[$key]['displayName']) > 15)
-				{
-					$sideboxes[$key]['displayName'] = mb_substr($sideboxes[$key]['displayName'], 0, 15) . '...';
-				}
-			}
-		}
+                if (strlen($sideboxes[$key]['displayName']) > 15)
+                {
+                    $sideboxes[$key]['displayName'] = mb_substr($sideboxes[$key]['displayName'], 0, 15) . '...';
+                }
+            }
+        }
 
-		$fusionEditor = $this->fusioneditor->create("text");
+        // Prepare my data
+        $data = array(
+            'url' => $this->template->page_url,
+            'sideboxes' => $sideboxes,
+            'sideboxModules' => $this->sideboxModules
+        );
 
-		// Prepare my data
-		$data = array(
-			'url' => $this->template->page_url,
-			'sideboxes' => $sideboxes,
-			"sidebox" => $this->config->item('sidebox'),
-			"sidebox_home" => $this->config->item('sidebox_home'),
-			'sideboxModules' => $this->sideboxModules,
-			'fusionEditor' => $fusionEditor
-		);
+        // Load my view
+        $output = $this->template->loadPage("sidebox/sidebox.tpl", $data);
 
-		// Load my view
-		$output = $this->template->loadPage("sidebox/sidebox.tpl", $data);
+        // Put my view in the main box with a headline
+        $content = $this->administrator->box('', $output);
 
-		// Put my view in the main box with a headline
-		$content = $this->administrator->box('Sideboxes', $output);
+        // Output my content. The method accepts the same arguments as template->view
+        $this->administrator->view($content, false, "modules/admin/js/sidebox.js");
+    }
 
-		// Output my content. The method accepts the same arguments as template->view
-		$this->administrator->view($content, false, "modules/admin/js/sidebox.js");
-	}
+    private function getSideboxModules()
+    {
+        $sideboxes = array();
 
-	private function getSideboxModules()
-	{
-		$sideboxes = array();
-		
-		$this->administrator->loadModules();
+        $this->administrator->loadModules();
 
-		foreach($this->administrator->getModules() as $name => $manifest)
-		{
-			if(preg_match("/sidebox_/i", $name))
-			{
-				$sideboxes[$name] = $manifest;
-			}
-		}
+        foreach ($this->administrator->getModules() as $name => $manifest)
+        {
+            if (preg_match("/sidebox_/i", $name))
+            {
+                $sideboxes[$name] = $manifest;
+            }
+        }
 
-		return $sideboxes;
-	}
+        return $sideboxes;
+    }
 
-	public function create()
-	{
-		requirePermission("addSideboxes");
+    public function create_submit()
+    {
+        requirePermission("addSideboxes");
 
-		$data["type"] = preg_replace("/sidebox_/", "", $this->input->post("type"));
-		$data["displayName"] = $this->input->post("displayName");
+        $data['type'] = preg_replace("/sidebox_/", "", $this->input->post('type'));
+        $data['displayName'] = $this->input->post('displayName');
+        $data['location'] = $this->input->post('location');
 
-		foreach($data as $value)
-		{
-			if(!$value)
-			{
-				die("UI.alert('The fields can\'t be empty')");
-			}
-		}
+        if (!$data["displayName"])
+        {
+            die('Name can\'t be empty');
+        }
 
-		$id = $this->sidebox_model->add($data);
+        $id = $this->sidebox_model->add($data);
 
-		if($this->input->post('visibility') == "group")
-		{
-			$this->sidebox_model->setPermission($id);
-		}
+        if ($this->input->post('visibility') == "group")
+        {
+            $this->sidebox_model->setPermission($id);
+        }
 
-		// Handle custom sidebox text
-		if($data['type'] == "custom")
-		{
-			$text = $this->input->post("text");
+        // Handle custom sidebox text
+        if ($data['type'] == "custom")
+        {
+            $data["content"] = $this->input->post("content");
 
-			$this->sidebox_model->addCustom($text);
-		}
+            if (!$data["content"]) {
+                die('Content can\'t be empty');
+            }
 
-		die('window.location.reload(true)');
-	}
+            $text = $this->input->post('content', false);
 
-	public function edit($id = false)
-	{
-		requirePermission("editSideboxes");
+            $this->sidebox_model->addCustom($text);
+        }
 
-		if(!is_numeric($id) || !$id)
-		{
-			die();
-		}
+        die("yes");
+    }
 
-		$sidebox = $this->sidebox_model->getSidebox($id);
-		$sideboxCustomText = $this->sidebox_model->getCustomText($id);
+    public function new()
+    {
+        requirePermission("editSideboxes");
 
-		if(!$sidebox)
-		{
-			show_error("There is no sidebox with ID ".$id);
+        $this->sideboxModules = $this->getSideboxModules();
 
-			die();
-		}
+        // Change the title
+        $this->administrator->setTitle('Add Sidebox');
 
-		$this->sideboxModules = $this->getSideboxModules();
+        // Prepare my data
+        $data = array(
+            'url' => $this->template->page_url,
+            'sideboxModules' => $this->sideboxModules
+        );
 
-		// Change the title
-		$this->administrator->setTitle(langColumn($sidebox['displayName']));
+        // Load my view
+        $output = $this->template->loadPage("sidebox/add_sidebox.tpl", $data);
 
-		$fusionEditor = $this->fusioneditor->create("text", false, 250, $sideboxCustomText);
+        // Put my view in the main box with a headline
+        $content = $this->administrator->box('', $output);
 
-		// Prepare my data
-		$data = array(
-			'url' => $this->template->page_url,
-			'sidebox' => $sidebox,
-			'sideboxModules' => $this->sideboxModules,
-			'fusionEditor' => $fusionEditor
-		);
+        // Output my content. The method accepts the same arguments as template->view
+        $this->administrator->view($content, false, "modules/admin/js/sidebox.js");
+    }
 
-		// Load my view
-		$output = $this->template->loadPage("sidebox/edit_sidebox.tpl", $data);
+    public function edit($id = false)
+    {
+        requirePermission("editSideboxes");
 
-		// Put my view in the main box with a headline
-		$content = $this->administrator->box('<a href="'.$this->template->page_url.'admin/sidebox">Sideboxes</a> &rarr; '.langColumn($sidebox['displayName']), $output);
+        if (!is_numeric($id) || !$id)
+        {
+            die();
+        }
 
-		// Output my content. The method accepts the same arguments as template->view
-		$this->administrator->view($content, false, "modules/admin/js/sidebox.js");
-	}
+        $sidebox = $this->sidebox_model->getSidebox($id);
+        $sideboxCustomText = $this->sidebox_model->getCustomText($id);
 
-	public function move($id = false, $direction = false)
-	{
-		requirePermission("editSideboxes");
+        if (!$sidebox)
+        {
+            show_error("There is no sidebox with ID " . $id);
 
-		if(!$id || !$direction)
-		{
-			die();
-		}
-		else
-		{
-			$order = $this->sidebox_model->getOrder($id);
+            die();
+        }
 
-			if(!$order)
-			{
-				die();
-			}
-			else
-			{
-				if($direction == "up")
-				{
-					$target = $this->sidebox_model->getPreviousOrder($order);
-				}
-				else
-				{
-					$target = $this->sidebox_model->getNextOrder($order);
-				}
+        $this->sideboxModules = $this->getSideboxModules();
 
-				if(!$target)
-				{
-					die();
-				}
-				else
-				{
-					$this->sidebox_model->setOrder($id, $target['order']);
-					$this->sidebox_model->setOrder($target['id'], $order);
-				}
-			}
-		}
-	}
+        // Change the title
+        $this->administrator->setTitle(langColumn($sidebox['displayName']));
 
-	public function saveSettings()
-	{
-		require_once('application/libraries/ConfigEditor.php');
+        // Prepare my data
+        $data = array(
+            'url' => $this->template->page_url,
+            'sidebox' => $sidebox,
+            'sideboxModules' => $this->sideboxModules,
+            'sideboxCustomText' => $sideboxCustomText
+        );
 
-		$sidebox = $this->input->post("show_sidebox");
+        // Load my view
+        $output = $this->template->loadPage("sidebox/edit_sidebox.tpl", $data);
 
-		if($sidebox == "always")
-		{
-			$sidebox = true;
-			$sidebox_home = false;
-		}
-		elseif($sidebox == "home")
-		{
-			$sidebox = true;
-			$sidebox_home = true;
-		}
-		else
-		{
-			$sidebox = false;
-			$sidebox_home = false;
-		}
+        // Put my view in the main box with a headline
+        $content = $this->administrator->box('', $output);
 
-		$fusionConfig = new ConfigEditor("application/config/fusion.php");
+        // Output my content. The method accepts the same arguments as template->view
+        $this->administrator->view($content, false, "modules/admin/js/sidebox.js");
+    }
 
-		$fusionConfig->set('sidebox', $sidebox);
-		$fusionConfig->set('sidebox_home', $sidebox_home);
+    public function move($id = false, $direction = false)
+    {
+        requirePermission("editSideboxes");
 
-		$fusionConfig->save();
+        if (!$id || !$direction)
+        {
+            die();
+        } else {
+            $order = $this->sidebox_model->getOrder($id);
 
-		die("UI.alert('Settings have been saved!')");
-	}
+            if (!$order)
+            {
+                die();
+            } else {
+                if ($direction == "up")
+                {
+                    $target = $this->sidebox_model->getPreviousOrder($order);
+                } else {
+                    $target = $this->sidebox_model->getNextOrder($order);
+                }
 
-	public function save($id = false)
-	{
-		requirePermission("editSideboxes");
+                if (!$target)
+                {
+                    die();
+                } else {
+                    $this->sidebox_model->setOrder($id, $target['order']);
+                    $this->sidebox_model->setOrder($target['id'], $order);
+                }
+            }
+        }
+    }
 
-		if(!$id || !is_numeric($id))
-		{
-			die();
-		}
+    public function save($id = false)
+    {
+        requirePermission("editSideboxes");
 
-		$data["type"] = preg_replace("/sidebox_/", "", $this->input->post("type"));
-		$data["displayName"] = $this->input->post("displayName");
+        if (!$id || !is_numeric($id)) {
+            die("No ID");
+        }
 
-		foreach($data as $value)
-		{
-			if(!$value)
-			{
-				die("UI.alert('The fields can\'t be empty')");
-			}
-		}
+        $data["type"] = preg_replace("/sidebox_/", "", $this->input->post("type"));
+        $data["displayName"] = $this->input->post("displayName");
 
-		$this->sidebox_model->edit($id, $data);
+        foreach ($data as $value)
+        {
+            if (!$value)
+            {
+                die("The fields can\'t be empty");
+            }
+        }
 
-		// Handle custom sidebox text
-		if($data["type"] == "custom")
-		{
-			$text = $this->input->post("text");
-			$this->sidebox_model->editCustom($id, $text);
-		}
+        $this->sidebox_model->edit($id, $data);
 
-		$hasPermission = $this->sidebox_model->hasPermission($id);
+        // Handle custom sidebox text
+        if ($data["type"] == "custom")
+        {
+            $text = $this->input->post("content", false);
+            $this->sidebox_model->editCustom($id, $text);
+        }
 
-		if($this->input->post('visibility') == "group" && !$hasPermission)
-		{
-			$this->sidebox_model->setPermission($id);
-		}
-		elseif($this->input->post('visibility') != "group" && $hasPermission)
-		{
-			$this->sidebox_model->deletePermission($id);
-		}
+        $hasPermission = $this->sidebox_model->hasPermission($id);
 
-		die('window.location="'.$this->template->page_url.'admin/sidebox"');
-	}
+        if ($this->input->post('visibility') == "group" && !$hasPermission)
+        {
+            $this->sidebox_model->setPermission($id);
+        } elseif ($this->input->post('visibility') != "group" && $hasPermission)
+        {
+            $this->sidebox_model->deletePermission($id);
+        }
 
-	public function delete($id = false)
-	{
-		requirePermission("deleteSideboxes");
+        die("yes");
+    }
 
-		if(!$id || !is_numeric($id))
-		{
-			die();
-		}
+    public function delete($id = false)
+    {
+        requirePermission("deleteSideboxes");
 
-		$this->sidebox_model->delete($id);
-	}
+        if (!$id || !is_numeric($id))
+        {
+            die();
+        }
+
+        $this->sidebox_model->delete($id);
+    }
 }

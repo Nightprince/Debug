@@ -17,7 +17,7 @@ var Languages = {
 			}
 			else
 			{
-				UI.alert(data);
+				Swal.fire('', data, 'error')
 			}
 		});
 	}

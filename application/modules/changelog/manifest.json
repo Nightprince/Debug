@@ -1,9 +1,11 @@
 {
 	"description":"Allows developers to post changelog messages",
+	"version": "2.0.0",
+	"date": "2023-05-30",
 	"author":
 	{
 		"name":"FusionCMS",
-		"website":"https:\/\/github.com\/Yekta-Core\/FusionCMS"
+		"website":"https:\/\/fusion-hub.com"
 	},
 	"permissions":
 	{
@@ -79,13 +81,13 @@
 		
 		{
 			"text":"Website",
-			"icon":"cursor",
+			"icon":"list-ul",
 			"links":
 			[
 				
 				{
 					"text":"Changelog",
-					"icon":"list",
+					"icon":"list-ul",
 					"controller":"admin",
 					"requirePermission":"canViewAdmin"
 				}

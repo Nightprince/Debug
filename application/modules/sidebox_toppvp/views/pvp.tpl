@@ -23,15 +23,15 @@
 </script>
 <div id="toppvp">
 	{foreach from=$realms key=key item=realm}
-		<div class="toppvp_realm" id="toppvp_realm_{$key - 1}" style="display:none;">
-			<div class="toppvp_select">
-				{if $key != $max_realm}<a href="javascript:void(0)" onClick="TopPvP.show(TopPvP.current + 1)" class="toppvp_next" data-tip="{lang("next", "sidebox_toppvp")}">&rarr;</a>{/if}
-				{if $key != $min_realm && $max_realm != 1}<a href="javascript:void(0)" onClick="TopPvP.show(TopPvP.current - 1)" class="toppvp_previous"  data-tip="{lang("previous", "sidebox_toppvp")}">&larr;</a>{/if}
+		<div class="realm type-toppvp" id="toppvp_realm_{$key - 1}" style="display:none;">
+			<div class="realm-name" title="{$realm->getName()}">
+			{if $key != $min_realm && $max_realm != 1}<a href="javascript:void(0)" onClick="TopPvP.show(TopPvP.current - 1)" class="toppvp_previous"  data-tip="{lang("previous", "sidebox_toppvp")}"><i class="fa-solid fa-circle-left"></i></a>{/if}
 				{$realm->getName()}
+				{if $key != $max_realm}<a href="javascript:void(0)" onClick="TopPvP.show(TopPvP.current + 1)" class="toppvp_next" data-tip="{lang("next", "sidebox_toppvp")}"><i class="fa-solid fa-circle-right"></i></a>{/if}
+				
+				
 			</div>
-			<div class="toppvp_data">
-				{$realm_html.$key}
-			</div>
+			{$realm_html.$key}
 		</div>
 	{/foreach}
 	<div style="clear:both;"></div>

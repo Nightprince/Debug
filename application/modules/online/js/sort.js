@@ -10,11 +10,11 @@ var Sort = {
 		{
 			if(Sort.nameASC)
 			{
-				return $(a).find("td:first-child a").html() > $(b).find("td:first-child a").html() ? 1 : -1;
+				return $(a).find("th:first-child a").html() > $(b).find("th:first-child a").html() ? 1 : -1;
 			}
 			else
 			{
-				return $(a).find("td:first-child a").html() < $(b).find("td:first-child a").html() ? 1 : -1;
+				return $(a).find("th:first-child a").html() < $(b).find("th:first-child a").html() ? 1 : -1;
 			}
 		});
 
@@ -34,11 +34,11 @@ var Sort = {
 		{
 			if(Sort.levelASC)
 			{
-				return $(a).find("td:nth-child(2)").html() > $(b).find("td:nth-child(2)").html() ? 1 : -1;
+				return $(a).find("th:nth-child(2)").html() > $(b).find("th:nth-child(2)").html() ? 1 : -1;
 			}
 			else
 			{
-				return $(a).find("td:nth-child(2)").html() < $(b).find("td:nth-child(2)").html() ? 1 : -1;
+				return $(a).find("th:nth-child(2)").html() < $(b).find("th:nth-child(2)").html() ? 1 : -1;
 			}
 		});
 
@@ -58,11 +58,11 @@ var Sort = {
 		{
 			if(Sort.locationASC)
 			{
-				return $(a).find("td:nth-child(5)").html() > $(b).find("td:nth-child(5)").html() ? 1 : -1;
+				return $(a).find("th:nth-child(5)").html() > $(b).find("th:nth-child(5)").html() ? 1 : -1;
 			}
 			else
 			{
-				return $(a).find("td:nth-child(5)").html() < $(b).find("td:nth-child(5)").html() ? 1 : -1;
+				return $(a).find("th:nth-child(5)").html() < $(b).find("th:nth-child(5)").html() ? 1 : -1;
 			}
 		});
 

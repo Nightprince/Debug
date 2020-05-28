@@ -1,49 +1,4 @@
 var Store = {
-	
-	toggleGroup: function(field)
-	{
-		var group = $(field).parent().next('.item_group');
-
-		if(group.is(":visible"))
-		{
-			$(field).html('[+]').attr('data-tip', lang("show", "store"));
-		}
-		else
-		{
-			$(field).html('[-]').attr('data-tip', lang("hide", "store"));
-		}
-
-		group.slideToggle(300);
-	},
-
-	toggleAllGroups: function(field)
-	{
-		var groups = $(field).parents('.realm_items').find('.hide_group');
-
-		if(/\[\+\]/.test($(field).html()))
-		{
-			$(field).html('[-] Hide all item groups');
-
-			groups.each(function()
-			{
-				var group = $(this).parent().next('.item_group');
-				$(this).html('[-]').attr('data-tip', lang("hide", "store"));
-				group.slideDown(300);
-			});
-		}
-		else
-		{
-			$(field).html('[+] Show all item groups');
-
-			groups.each(function()
-			{
-				var group = $(this).parent().next('.item_group');
-				$(this).html('[+]').attr('data-tip', lang("show", "store"));
-				group.slideUp(300);
-			});
-		}
-	},
-
 	/**
 	 * Filter object, holds filtering functionality
 	 */
@@ -219,26 +174,6 @@ var Store = {
 		 	});
 
 		 	Store.Filter.filter();
-		},
-
-		/**
-		 * Toggle the visibility of a realm
-		 * @param Int id
-		 */
-		toggle: function(id)
-		{
-			var field = $("#realm_items_" + id);
-
-			if(field.is(":visible"))
-			{
-				$("#realm_indicator_" + id).html("[+]");
-				field.fadeOut(300);
-			}
-			else
-			{
-				$("#realm_indicator_" + id).html("[-]");
-				field.fadeIn(300);
-			}
 		},
 
 		/**
@@ -463,7 +398,11 @@ var Store = {
 			{
 				this[priceType] = old;
 
-				UI.alert(lang("cant_afford", "store"));
+				Swal.fire({
+					icon: 'error',
+					title: 'Oops...',
+					text: lang("cant_afford", "store"),
+				})
 			}
 			else
 			{
@@ -554,20 +493,22 @@ var Store = {
 					{
 						var tooltipHTML = (tooltip) ? 'data-realm="' + realmId +'" rel="item=' + itemId +'"' : '';
 
-						var itemHTML = '<article class="store_item" id="cart_item_' + Store.Cart.count + '">' +
-											'<div class="item_price">' +
+						var itemHTML = '<div class="store_item row" id="cart_item_' + Store.Cart.count + '">' +
+											
+											'<a href="' + Config.URL + 'item/' + realmId + '/' + itemId + '" class="item_name col-5 q' + quality  +'" ' + tooltipHTML + '>' +
+												name  + 
+											'</a>' +
+											'<span class="col-1" id="cart_item_count_' + Store.Cart.count + '"></span>' +
+											'<div class="item_price col-2">' +
 												'<img src="' + Config.URL + 'application/images/icons/' + ((priceType == "vp") ? "lightning" : "coins") + '.png" align="absmiddle" />' +
 												price + " " + ((priceType == "vp") ? lang("vp", "store") : lang("dp", "store")) +
 											'</div>' +
-											'<a href="javascript:void(0)" onClick="Store.Cart.remove(' + id + ', ' + Store.Cart.count + ')" class="delete_item">' +
-												'<img src="' + Config.URL + 'application/images/icons/delete.png" align="absmiddle" />' +
+											'<div class="item_realm col-3">' + realm + '</div>' +
+											'<a href="javascript:void(0)" onClick="Store.Cart.remove(' + id + ', ' + Store.Cart.count + ')" class="delete_item col-1">' +
+												'<i class="fas fa-trash"></i>' +
 											'</a>' +
-											'<a href="' + Config.URL + 'item/' + realmId + '/' + itemId + '" class="item_name q' + quality  +'" ' + tooltipHTML + '>' +
-												name + ' <span id="cart_item_count_' + Store.Cart.count + '"></span>' + 
-											'</a>' +
-											'<div class="item_realm">' + realm + '</div>' +
 											'<div class="clear"></div>' +
-										'</article>';
+										'</div>';
 
 						$("#cart_items").append(itemHTML);
 						$("#cart_item_" + Store.Cart.count).slideDown(150, function()
@@ -715,8 +656,17 @@ var Store = {
 		 */
 		pay: function()
 		{
-			UI.confirm(lang("want_to_buy", "store"), lang("yes", "store"), function()
-			{
+			//UI.confirm(lang("want_to_buy", "store"), lang("yes", "store"), function()
+			Swal.fire({
+				title: lang("want_to_buy", "store"),
+				text: "You won't be able to revert this!",
+				icon: 'warning',
+				showCancelButton: true,
+				confirmButtonColor: '#3085d6',
+				cancelButtonColor: '#d33',
+				confirmButtonText: lang("yes", "store")
+			}).then((result) => {
+			if (result.isConfirmed) {
 				$("[data-id]").attr("data-available", "1");
 
 				for(i in Store.Cart.list)
@@ -742,7 +692,7 @@ var Store = {
 
 				$("#checkout").fadeOut(150, function()
 				{
-					$("#checkout").html('<center><img src="' + Config.image_path + 'ajax.gif" /></center>').fadeIn(150, function()
+					$("#checkout").html('<center><i class="fa-solid fa-spinner fa-xl fa-spin"></i></center>').fadeIn(150, function()
 					{
 						$.post(Config.URL + "store/pay", {data: data, csrf_token_name: Config.CSRF}, function(data)
 						{
@@ -764,6 +714,7 @@ var Store = {
 						});
 					})
 				});
+			}
 			});
 		},
 

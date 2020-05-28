@@ -2,243 +2,230 @@
 
 class Slider extends MX_Controller
 {
-	public function __construct()
-	{
-		// Make sure to load the administrator library!
-		$this->load->library('administrator');
-		$this->load->model('slider_model');
+    public function __construct()
+    {
+        // Make sure to load the administrator library!
+        $this->load->library('administrator');
+        $this->load->model('slider_model');
 
-		parent::__construct();
+        parent::__construct();
+		
+		require_once('application/libraries/Configeditor.php');
 
-		requirePermission("viewSlider");
-	}
+        requirePermission("viewSlider");
+    }
 
-	public function index()
-	{
-		// Change the title
-		$this->administrator->setTitle("Manage slider");
+    public function index()
+    {
+        // Change the title
+        $this->administrator->setTitle("Manage slider");
 
-		$slides = $this->cms_model->getSlides();
+        $slides = $this->cms_model->getSlides();
 
-		if($slides)
-		{
-			foreach($slides as $key => $value)
-			{
-				$slides[$key]['image'] = preg_replace("/{path}/", "", $value['image']);
+        if ($slides) {
+            foreach ($slides as $key => $value) {
+                $slides[$key]['image'] = preg_replace("/{path}/", "", $value['image']);
 
-				if(strlen($slides[$key]['image']) > 15)
-				{
-					$slides[$key]['image'] = "...".mb_substr($slides[$key]['image'], strlen($slides[$key]['image'])-15, 15);
-				}
+                if (strlen($slides[$key]['image']) > 15) {
+                    $slides[$key]['image'] = "..." . mb_substr($slides[$key]['image'], strlen($slides[$key]['image']) - 15, 15);
+                }
 
-				if(strlen($value['text']) > 12)
-				{
-					$slides[$key]['text'] = mb_substr($value['text'], 0, 12) . '...';
-				}
+                if (strlen($value['header']) > 16) {
+                    $slides[$key]['header'] = mb_substr($value['header'], 0, 16) . '...';
+                }
+            }
+        }
 
-				if(strlen($value['link']) > 12)
-				{
-					$slides[$key]['link_short'] = mb_substr($value['link'], 0, 12) . '...';
-				}
-				else
-				{
-					$slides[$key]['link_short'] = $value['link'];
-				}
-			}
-		}
+        // Prepare my data
+        $data = array(
+            'url' => $this->template->page_url,
+            'slides' => $slides,
+            "slider" => $this->config->item('slider'),
+            "slider_home" => $this->config->item('slider_home'),
+            "slider_interval" => $this->config->item('slider_interval'),
+            "slider_style" => $this->config->item('slider_style')
+        );
 
-		// Prepare my data
-		$data = array(
-			'url' => $this->template->page_url,
-			'slides' => $slides,
-			"slider" => $this->config->item('slider'),
-			"slider_home" => $this->config->item('slider_home'),
-			"slider_interval" => $this->config->item('slider_interval'),
-			"slider_style" => $this->config->item('slider_style')
-		);
+        // Load my view
+        $output = $this->template->loadPage("slider/slider.tpl", $data);
 
-		// Load my view
-		$output = $this->template->loadPage("slider/slider.tpl", $data);
+        // Put my view in the main box with a headline
+        $content = $this->administrator->box('Slides', $output);
 
-		// Put my view in the main box with a headline
-		$content = $this->administrator->box('Slides', $output);
+        // Output my content. The method accepts the same arguments as template->view
+        $this->administrator->view($content, false, "modules/admin/js/slider.js");
+    }
 
-		// Output my content. The method accepts the same arguments as template->view
-		$this->administrator->view($content, false, "modules/admin/js/slider.js");
-	}
+    public function create()
+    {
+        requirePermission("addSlider");
 
-	public function create()
-	{
-		requirePermission("addSlider");
+        $data["image"] = $this->input->post("image");
+        $data["header"] = $this->input->post("text_header");
+        $data["body"] = $this->input->post("text_body");
+        $data["footer"] = $this->input->post("text_footer");
 
-		$data["image"] = $this->input->post("image");
-		$data["link"] = $this->input->post("link");
-		$data["text"] = $this->input->post("text");
+        if (empty($data["image"])) {
+            die("Image can't be empty");
+        }
 
-		if(!preg_match("/http:\/\//", $data['image']))
-		{
-			$data['image'] = "{path}".$data['image'];
-		}
+        if (!preg_match("/http:\/\//", $data['image'])) {
+            $data['image'] = "{path}" . $data['image'];
+        }
 
-		$this->slider_model->add($data);
+        $this->slider_model->add($data);
 
-		die('window.location.reload(true)');
-	}
+        die("yes");
+    }
 
-	public function edit($id = false)
-	{
-		if(!is_numeric($id) || !$id)
-		{
-			die();
-		}
+    public function edit($id = false)
+    {
+        if (!is_numeric($id) || !$id) {
+            die();
+        }
 
-		$slide = $this->slider_model->getSlide($id);
+        $slide = $this->slider_model->getSlide($id);
 
-		if(!$slide)
-		{
-			show_error("There is no slide with ID ".$id);
+        if (!$slide) {
+            show_error("There is no slide with ID " . $id);
 
-			die();
-		}
+            die();
+        }
 
-		// Change the title
-		$this->administrator->setTitle('Slide #'.$slide['id']);
+        // Change the title
+        $this->administrator->setTitle('Slide #' . $slide['id']);
 
-		// Prepare my data
-		$data = array(
-			'url' => $this->template->page_url,
-			'slide' => $slide
-		);
+        // Prepare my data
+        $data = array(
+            'url' => $this->template->page_url,
+            'slide' => $slide
+        );
 
-		// Load my view
-		$output = $this->template->loadPage("slider/edit_slider.tpl", $data);
+        // Load my view
+        $output = $this->template->loadPage("slider/edit_slider.tpl", $data);
 
-		// Put my view in the main box with a headline
-		$content = $this->administrator->box('<a href="'.$this->template->page_url.'admin/slider">Manage slider</a> &rarr; Slide #'.$slide['id'], $output);
+        // Put my view in the main box with a headline
+        $content = $this->administrator->box('<a href="' . $this->template->page_url . 'admin/slider">Manage slider</a> &rarr; Slide #' . $slide['id'], $output);
 
-		// Output my content. The method accepts the same arguments as template->view
-		$this->administrator->view($content, false, "modules/admin/js/slider.js");
-	}
+        // Output my content. The method accepts the same arguments as template->view
+        $this->administrator->view($content, false, "modules/admin/js/slider.js");
+    }
 
-	public function move($id = false, $direction = false)
-	{
-		requirePermission("editSlider");
+    public function new()
+    {
+        // Change the title
+        $this->administrator->setTitle('Add slider');
 
-		if(!$id || !$direction)
-		{
-			die();
-		}
-		else
-		{
-			$order = $this->slider_model->getOrder($id);
+        // Prepare my data
+        $data = array(
+            'url' => $this->template->page_url,
+        );
 
-			if(!$order)
-			{
-				die();
-			}
-			else
-			{
-				if($direction == "up")
-				{
-					$target = $this->slider_model->getPreviousOrder($order);
-				}
-				else
-				{
-					$target = $this->slider_model->getNextOrder($order);
-				}
+        // Load my view
+        $output = $this->template->loadPage("slider/add_slider.tpl", $data);
 
-				if(!$target)
-				{
-					die();
-				}
-				else
-				{
-					$this->slider_model->setOrder($id, $target['order']);
-					$this->slider_model->setOrder($target['id'], $order);
-				}
-			}
-		}
-	}
+        // Put my view in the main box with a headline
+        $content = $this->administrator->box('Add slider', $output);
 
-	public function saveSettings()
-	{
-		requirePermission("editSlider");
+        // Output my content. The method accepts the same arguments as template->view
+        $this->administrator->view($content, false, "modules/admin/js/slider.js");
+    }
 
-		require_once('application/libraries/ConfigEditor.php');
+    public function move($id = false, $direction = false)
+    {
+        requirePermission("editSlider");
 
-		$slider = $this->input->post("show_slider");
+        if (!$id || !$direction) {
+            die();
+        } else {
+            $order = $this->slider_model->getOrder($id);
 
-		if(!is_numeric($this->input->post("slider_interval")) || !$this->input->post("slider_interval"))
-		{
-			$slider_interval = 3000;
-		}
-		else
-		{
-			$slider_interval = (int)$this->input->post("slider_interval") * 1000;
-		}
+            if (!$order) {
+                die();
+            } else {
+                if ($direction == "up") {
+                    $target = $this->slider_model->getPreviousOrder($order);
+                } else {
+                    $target = $this->slider_model->getNextOrder($order);
+                }
 
-		$slider_style = $this->input->post("slider_style");
+                if (!$target) {
+                    die();
+                } else {
+                    $this->slider_model->setOrder($id, $target['order']);
+                    $this->slider_model->setOrder($target['id'], $order);
+                }
+            }
+        }
+    }
 
-		if($slider == "always")
-		{
-			$slider = true;
-			$slider_home = false;
-		}
-		elseif($slider == "home")
-		{
-			$slider = true;
-			$slider_home = true;
-		}
-		else
-		{
-			$slider = false;
-			$slider_home = false;
-		}
+    public function saveSettings()
+    {
+        requirePermission("editSlider");
 
-		$fusionConfig = new ConfigEditor("application/config/fusion.php");
+        $slider = $this->input->post("show_slider");
 
-		$fusionConfig->set('slider', $slider);
-		$fusionConfig->set('slider_interval', $slider_interval);
-		$fusionConfig->set('slider_home', $slider_home);
-		$fusionConfig->set('slider_style', $slider_style);
+        if (!is_numeric($this->input->post("slider_interval")) || !$this->input->post("slider_interval")) {
+            $slider_interval = 3000;
+        } else {
+            $slider_interval = (int)$this->input->post("slider_interval") * 1000;
+        }
 
-		$fusionConfig->save();
+        $slider_style = $this->input->post("slider_style");
 
-		die("UI.alert('Settings have been saved!')");
-	}
+        if ($slider == "always") {
+            $slider = true;
+            $slider_home = false;
+        } elseif ($slider == "home") {
+            $slider = true;
+            $slider_home = true;
+        } else {
+            $slider = false;
+            $slider_home = false;
+        }
 
-	public function save($id = false)
-	{
-		requirePermission("editSlider");
+        $fusionConfig = new ConfigEditor("application/config/fusion.php");
 
-		if(!$id || !is_numeric($id))
-		{
-			die();
-		}
+        $fusionConfig->set('slider', $slider);
+        $fusionConfig->set('slider_interval', $slider_interval);
+        $fusionConfig->set('slider_home', $slider_home);
+        $fusionConfig->set('slider_style', $slider_style);
 
-		$data["image"] = $this->input->post("image");
-		$data["link"] = $this->input->post("link");
-		$data["text"] = $this->input->post("text");
+        $fusionConfig->save();
 
-		if(!preg_match("/http:\/\//", $data['image']))
-		{
-			$data['image'] = "{path}".$data['image'];
-		}
+        die("yes");
+    }
 
-		$this->slider_model->edit($id, $data);
+    public function save($id = false)
+    {
+        requirePermission("editSlider");
 
-		die('window.location="'.$this->template->page_url.'admin/slider"');
-	}
+        if (!$id || !is_numeric($id)) {
+            die();
+        }
 
-	public function delete($id = false)
-	{
-		requirePermission("deleteSlider");
+        $data["image"] = $this->input->post("image");
+        $data["header"] = $this->input->post("text_header");
+        $data["body"] = $this->input->post("text_body");
+        $data["footer"] = $this->input->post("text_footer");
 
-		if(!$id || !is_numeric($id))
-		{
-			die();
-		}
+        if (!preg_match("/http:\/\//", $data['image'])) {
+            $data['image'] = "{path}" . $data['image'];
+        }
 
-		$this->slider_model->delete($id);
-	}
+        $this->slider_model->edit($id, $data);
+
+        die('window.location="' . $this->template->page_url . 'admin/slider"');
+    }
+
+    public function delete($id = false)
+    {
+        requirePermission("deleteSlider");
+
+        if (!$id || !is_numeric($id)) {
+            die();
+        }
+
+        $this->slider_model->delete($id);
+    }
 }

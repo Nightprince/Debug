@@ -5,7 +5,9 @@
  * @version 6.0
  * @author Jesper Lindström
  * @author Xavier Geerinck
- * @link https://github.com/Yekta-Core/FusionCMS/
+ * @author  Keramat Jokar (Nightprince) <https://github.com/Nightprince>
+ * @author  Ehsan Zare (Darksider) <darksider.legend@gmail.com>
+ * @link    https://github.com/FusionWowCMS/FusionCMS
  */
 
 /*
@@ -33,21 +35,21 @@ $config['theme'] = "default";
 | Website title
 |--------------------------------------------------------------------------
 */
-$config['title'] = "MyServer";
+$config['title'] = "";
 
 /*
 |--------------------------------------------------------------------------
 | Server name
 |--------------------------------------------------------------------------
 */
-$config['server_name'] = "MyServer";
+$config['server_name'] = "";
 
 /*
 |--------------------------------------------------------------------------
 | Realmlist
 |--------------------------------------------------------------------------
 */
-$config['realmlist'] = "127.0.0.1";
+$config['realmlist'] = "";
 
 /*
 |--------------------------------------------------------------------------
@@ -71,29 +73,28 @@ $config['rewrite'] = true;
 | will be disabled if you disable this.
 |
 */
-$config['has_smtp'] = 1;
+$config['has_smtp'] = 0;
 
 /*
 |--------------------------------------------------------------------------
-| Disabled expansions
+| Max expansions
 |--------------------------------------------------------------------------
 |
-| You may disable expansions by their expansion ids, in case you're
-| running a WoTLK server and don't want accounts to have Cataclysm
-| expansion enabled.
+| Set the maximum expansion for accounts
 |
-| array(3) would disable Cataclysm while array(2,3) would disable both
-| WoTLK and Cataclysm.
+| 0 = Vanilla/Classic
+| 1 = The Burning Crusade/TBC
+| 2 = Wrath of The Lich King/Wotlk
+| 3 = Cataclysm
+| 4 = Mists of Pandaria/MoP
+| 5 = Warlods of Draenor/WoD
+| 6 = Legion
+| 7 = Battle for Azeroth/BFA
+| 8 = Shadowlands/SL
+| 9 = Dragonflight/DF
 |
 */
-$config['disabled_expansions'] = array();
-
-/*
-|--------------------------------------------------------------------------
-| Custom header image
-|--------------------------------------------------------------------------
-*/
-$config['header_url'] = false;
+$config['max_expansion'] = "0";
 
 /*
 |--------------------------------------------------------------------------
@@ -123,22 +124,10 @@ $config['header_url'] = false;
 |
 |--------------------------------------------------------------------------
 */
-$config['slider'] = true;
-$config['slider_home'] = true;
+$config['slider'] = false;
+$config['slider_home'] = false;
 $config['slider_interval'] = 5000;
 $config['slider_style'] = false;
-
-/*
-|--------------------------------------------------------------------------
-| Sideboxes module
-|
-| ['sidebox'] Enable or disable sideboxes
-| ['sidebox_home'] Hide sideboxes from any page except of 'Home'
-|
-|--------------------------------------------------------------------------
-*/
-$config['sidebox'] = true;
-$config['sidebox_home'] = true;
 
 /*
 |--------------------------------------------------------------------------
@@ -165,20 +154,8 @@ $config['reminder_interval'] = 60 * 60 * 12;
 | ['description'] Brief description of your site
 |
 */
-$config['keywords'] = "test,test";
-$config['description'] = "test";
-
-/*
-|--------------------------------------------------------------------------
-| Use Content Delivery Network for Javascript libraries
-|--------------------------------------------------------------------------
-|
-| Reduce load and improve loading times by enabling this.
-| If you're on a LAN environment put it to false, otherwise
-| the website won't load since it relies on those libraries.
-|
-*/
-$config['cdn'] = true;
+$config['keywords'] = "";
+$config['description'] = "";
 
 /*
 |--------------------------------------------------------------------------
@@ -189,19 +166,6 @@ $config['cdn'] = true;
 |
 */
 $config['use_fcms_tooltip'] = true;
-
-/*
-|--------------------------------------------------------------------------
-| Use Smileys
-|--------------------------------------------------------------------------
-|
-| This setting goes to where your smiley folder is, if you 
-| change the emoticons in it then don't forget to change 
-| the smileys.php
-|
-*/
-$config['smiley_path'] = "application/images/emoticons/";
-
 
 /*
 |--------------------------------------------------------------------------
@@ -226,6 +190,7 @@ $config['analytics'] = false;
 |
 | Wether or not the cache should be enabled. Disable only for development.
 | Turning it on will improve performance drastically.
-|
+| (Disabled, we do cache by .htaccess instead and are not dependant on the in-built CI Cache System. This allows use
+| to furtherly use filter options in specific places and modules we dont want cached. For example: Realm Status)
 */
-$config['cache'] = true;
+$config['cache'] = false;

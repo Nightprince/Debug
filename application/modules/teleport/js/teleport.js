@@ -71,12 +71,12 @@ var Teleport = {
 
 		$(".item_group").each(function()
 		{
-			$(this).removeClass("item_group").addClass("select_character");
+			$(this).removeClass("item_group").addClass("character-select");
 			$(this).find(".nice_active").removeClass("nice_active").html("Select");
 		});
 
-		$(button).parents(".select_character").removeClass("select_character").addClass("item_group");
-		$(button).addClass("nice_active").html('<img src="' + Config.URL + 'application/images/icons/accept.png" align="absmiddle"> ' + lang("selected", "teleport"));
+		$(button).parents("tr").removeClass("character-select").addClass("item_group");
+		$(button).addClass("nice_active").html(lang("selected", "teleport"));
 
 		this.hideLocations(function()
 		{
@@ -92,7 +92,7 @@ var Teleport = {
 	
 	showLocations: function(realm, race)
 	{
-		var field = $(".location[data-realm='" + realm + "']:first");
+		var field = $(".location-select[data-realm='" + realm + "']:first");
 
 		var faction = field.attr("data-faction");
 
@@ -113,7 +113,7 @@ var Teleport = {
 	{
 		try
 		{
-			var nextField = $(field).next(".location[data-realm='" + realm + "']");
+			var nextField = $(field).next(".location-select[data-realm='" + realm + "']");
 
 			if(nextField.attr("data-faction") == 0 || nextField.attr("data-faction") == race)
 			{
@@ -149,7 +149,7 @@ var Teleport = {
 
 			if(Teleport.User.vp < price)
 			{
-				UI.alert(lang("cant_afford", "teleport"));
+				Swal.fire(lang("cant_afford", "teleport"), '', 'error');
 			}
 			else
 			{
@@ -163,7 +163,7 @@ var Teleport = {
 
 			if(Teleport.User.dp < price)
 			{
-				UI.alert(lang("cant_afford", "teleport"));
+				Swal.fire(lang("cant_afford", "teleport"), '', 'error');
 			}
 			else
 			{
@@ -177,7 +177,7 @@ var Teleport = {
 
 			if(Teleport.Character.gold < price)
 			{
-				UI.alert(lang("cant_afford", "teleport"))
+				Swal.fire(lang("cant_afford", "teleport"), '', 'error');
 			}
 			else
 			{
@@ -186,7 +186,7 @@ var Teleport = {
 		}
 		else
 		{
-			UI.alert("Unknown price type");
+			Swal.fire("Unknown price type", '', 'error');
 		}
 
 		if(canTeleport)
@@ -196,11 +196,11 @@ var Teleport = {
 			{
 				if(data == 1)
 				{
-					UI.alert(Teleport.Character.name + " " + lang("teleported", "teleport"));
+					Swal.fire(Teleport.Character.name + " " + lang("teleported", "teleport"), '', 'success');
 				}
 				else
 				{
-					UI.alert(data);
+					Swal.fire(data, '', 'warning');
 				}
 			});
 
@@ -209,7 +209,7 @@ var Teleport = {
 			{
 				$(".item_group").each(function()
 				{
-					$(this).removeClass("item_group").addClass("select_character");
+					$(this).removeClass("item_group").addClass("character-select");
 					$(this).find(".nice_active").removeClass("nice_active").html(lang("select", "teleport"));
 				});
 			});

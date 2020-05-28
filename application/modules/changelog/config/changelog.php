@@ -1,3 +1,3 @@
 <?php
 
-$config['changelog_limit'] = 100;
+$config['changelog_limit'] = 10;

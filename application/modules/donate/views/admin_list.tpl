@@ -1,53 +1,24 @@
 {if $type == "paypal"}
 	{foreach from=$results item=paypal_log}
-		<li>
-			<table width="100%" style="font-size:11px;">
-				<tr>
-					<td width="13%">{date("Y/m/d", $paypal_log.timestamp)}</td>
-					<td width="13%">
-						<a href="{$url}admin/accounts/get/{$paypal_log.user_id}" target="_blank">
-							{$paypal_log.nickname}
-						</a>
-					</td>
-					
-					<td width="13%" {if !$paypal_log.validated}style="text-decoration:line-through"{/if}>
-						<b>
-							{$paypal_log.payment_amount} {$paypal_log.payment_currency}
-						</b>
-					</td>
-
-					{if $paypal_log.validated}
-						<td width="15%" >{$paypal_log.payment_status}</td>
-					{else}
-						<td width="15%" data-tip="{$paypal_log.error}" style="color:red;cursor:pointer;">
-							Error (?)
-						</td>
-					{/if}
-
-					<td data-tip="Transaction ID: {$paypal_log.txn_id}" style="font-size:11px;">{$paypal_log.payer_email}</td>
-				
-					{if !$paypal_log.validated}<td><a class="nice_button" style="float:right;" href="javascript:void(0)" onClick="Donate.give({$paypal_log.id}, this)">Give DP</a></td>{/if}
-				</tr>
-			</table>
-		</li>
-	{/foreach}
-{else}
-	{foreach from=$results item=paygol_log}
-		<li>
-			<table width="100%" style="font-size:11px;">
-				<tr>
-					<td width="15%">{date("Y/m/d", $paygol_log.timestamp)}</td>
-					<td width="13%">
-						<a href="{$url}admin/accounts/get/{$paygol_log.custom}" target="_blank">
-							{$paygol_log.nickname}
-						</a>
-					</td>
-					<td width="15%"><b>{round($paygol_log.price)} {$paygol_log.currency}</b></td>
-					<td width="15%">{$paygol_log.operator}</td>
-					<td width="10%"><img src="{$url}application/images/flags/{strtolower($paygol_log.country)}.png" data-tip="{$paygol_log.country}" style="opacity:1;"/></td>
-					<td data-tip="Message ID: {$paygol_log.message_id}">{$paygol_log.sender}</td>
-				</tr>
-			</table>
-		</li>
+		<tr>
+			<th width="20%">{date("Y/m/d H:i:s", $paypal_log.create_time)}</th>
+			<td width="15%">
+				<a href="{$url}admin/accounts/get/{$paypal_log.user_id}" target="_blank">
+					{$paypal_log.nickname}
+				</a>
+			</td>
+			<td width="15%">{$paypal_log.total} {$paypal_log.currency}</td>
+			<td width="10%">{$paypal_log.points}</td>
+			<td width="25%">{$paypal_log.payment_id}</td>
+			<td class="text-center" width="15%">
+                {if $paypal_log.status == 0}
+                    <span class="text-info" data-toggle="tooltip" title="Ongoing"><i class="fa-regular fa-circle-check fa-xl"></i></span>
+                {elseif $paypal_log.status == 1}
+                    <span class="text-success" data-toggle="tooltip" title="Success"><i class="fa-regular fa-circle-check fa-xl"></i></span>
+                {elseif $paypal_log.status == 2}
+                    <span class="text-danger" data-toggle="tooltip" title="Canceled"><i class="fa-regular fa-circle-check fa-xl"></i></span>
+                {/if}
+            </td>
+		</tr>
 	{/foreach}
 {/if}

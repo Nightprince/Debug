@@ -1,89 +1,39 @@
-<section class="box big">
-	<h2><img src="{$url}application/themes/admin/images/icons/black16x16/ic_settings.png"/> Sideboxes settings</h2>
-
-	<form onSubmit="Sidebox.saveSettings(this); return false">
-		<label for="show_sidebox">Visibility</label>
-		<select name="show_sidebox" id="show_sidebox">
-			<option value="home" {if $sidebox && $sidebox_home}selected{/if}>Only on homepage</option>
-			<option value="always" {if $sidebox && !$sidebox_home}selected{/if}>Always</option>
-			<option value="never" {if !$sidebox}selected{/if}>Never</option>
-		</select>
-
-		<input type="submit" value="Save settings" />
-	</form>
-</section>
-
-<section class="box big" id="main_sidebox">
-	<h2>
-		<img src="{$url}application/themes/admin/images/icons/black16x16/ic_grid.png"/>
-		Sideboxes (<div style="display:inline;" id="sidebox_count">{if !$sideboxes}0{else}{count($sideboxes)}{/if}</div>)
-	</h2>
-
-	<span>
-		<a class="nice_button" href="javascript:void(0)" onClick="Sidebox.add()">Create sidebox</a>
-	</span>
-
-	<ul id="sidebox_list">
+<div class="card">
+<div class="card-header">
+    Sideboxes(<div style="display:inline;" id="sidebox_count">{if !$sideboxes}0{else}{count($sideboxes)}{/if}</div>)
+	{if hasPermission("addSideboxes")}<a class="relative font-sans font-normal text-sm inline-flex items-center justify-center leading-5 no-underline h-8 px-3 py-2 space-x-1 border nui-focus transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed hover:enabled:shadow-none text-muted-700 border-muted-300 dark:text-white dark:bg-muted-700 dark:border-muted-600 dark:hover:enabled:bg-muted-600 hover:enabled:bg-muted-50 dark:active:enabled:bg-muted-700/70 active:enabled:bg-muted-100 rounded-md pull-right" href="{$url}admin/sidebox/new">Create Sidebox</a>{/if}
+</div>
+<div class="card-body">
+<table class="table table-responsive-md table-hover mb-0">
+	<thead>
+		<tr>
+			<th>Order</th>
+			<th>Name</th>
+			<th>Sidebox</th>
+			<th>Visibility</th>
+			<th>Location</th>
+			<th scope="col" style="text-align:center;">Actions</th>
+		</tr>
+	</thead>
+	<tbody>
 		{if $sideboxes}
 		{foreach from=$sideboxes item=sidebox}
-			<li>
-				<table width="100%">
-					<tr>
-						<td width="10%"><a href="javascript:void(0)" onClick="Sidebox.move('up', {$sidebox.id}, this)" data-tip="Move up"><img src="{$url}application/themes/admin/images/icons/black16x16/ic_up.png" /></a>
-							<a href="javascript:void(0)" onClick="Sidebox.move('down', {$sidebox.id}, this)" data-tip="Move down"><img src="{$url}application/themes/admin/images/icons/black16x16/ic_down.png" /></a></td>
-						<td width="20%"><b>{langColumn($sidebox.displayName)}</b></td>
-						<td width="30%">{$sidebox.name}</td>
-						<td width="30%">{if $sidebox.permission}Controlled per group{else}Visible to everyone{/if}</td>
-						<td style="text-align:right;">
-							<a href="{$url}admin/sidebox/edit/{$sidebox.id}" data-tip="Edit"><img src="{$url}application/themes/admin/images/icons/black16x16/ic_edit.png" /></a>&nbsp;
-							<a href="javascript:void(0)" onClick="Sidebox.remove({$sidebox.id}, this)" data-tip="Delete"><img src="{$url}application/themes/admin/images/icons/black16x16/ic_minus.png" /></a>
-						</td>
-					</tr>
-				</table>
-			</li>
+			<tr>
+				<td>
+					<a href="javascript:void(0)" onClick="Sidebox.move('up', {$sidebox.id}, this)" data-bs-toggle="tooltip" data-placement="bottom" title="Move up"><i class="fas fa-chevron-circle-up"></i></a>
+					<a href="javascript:void(0)" onClick="Sidebox.move('down', {$sidebox.id}, this)" data-bs-toggle="tooltip" data-placement="bottom" title="Move down"><i class="fas fa-chevron-circle-down"></i></a></td>
+				<td><b>{langColumn($sidebox.displayName)}</b></td>
+				<td>{$sidebox.name}</td>
+				<td>{if $sidebox.permission}Controlled per group{else}Visible to everyone{/if}</td>
+				<td>{$sidebox.location}</td>
+				<td style="text-align:center;">
+					<a href="{$url}admin/sidebox/edit/{$sidebox.id}"><button type="button" class="relative font-sans font-normal text-sm inline-flex items-center justify-center leading-5 no-underline h-8 px-3 py-2 space-x-1 border nui-focus transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed hover:enabled:shadow-none text-muted-700 border-muted-300 dark:text-white dark:bg-muted-700 dark:border-muted-600 dark:hover:enabled:bg-muted-600 hover:enabled:bg-muted-50 dark:active:enabled:bg-muted-700/70 active:enabled:bg-muted-100 rounded-md">Edit</button></a>&nbsp;
+					<a href="javascript:void(0)" onClick="Sidebox.remove({$sidebox.id}, this)"><button type="button" class="relative font-sans font-normal text-sm inline-flex items-center justify-center leading-5 no-underline h-8 px-3 py-2 space-x-1 border nui-focus transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed hover:enabled:shadow-none text-muted-700 border-muted-300 dark:text-white dark:bg-muted-700 dark:border-muted-600 dark:hover:enabled:bg-muted-600 hover:enabled:bg-muted-50 dark:active:enabled:bg-muted-700/70 active:enabled:bg-muted-100 rounded-md">Remove</button></a>
+				</td>
+			</tr>
 		{/foreach}
 		{/if}
-	</ul>
-</section>
-
-<section class="box big" id="add_sidebox" style="display:none;">
-	<h2><a href='javascript:void(0)' onClick="Sidebox.add()" data-tip="Return to sideboxes">Sideboxes</a> &rarr; New sidebox</h2>
-
-	<form onSubmit="Sidebox.create(this); return false" id="submit_form">
-		<label for="displayName">Headline</label>
-		<input type="text" name="displayName" id="displayName" />
-
-		<label for="type">Sidebox module</label>
-		<select id="type" name="type" onChange="Sidebox.toggleCustom(this)">
-			{foreach from=$sideboxModules item=module key=name}
-				<option value="{$name}">{$module.name}</option>
-			{/foreach}
-		</select>
-
-		<label for="visibility">Visibility mode</label>
-		<select name="visibility" id="visibility" onChange="if(this.value == 'group'){ $('#groups').fadeIn(300); } else { $('#groups').fadeOut(300); }">
-			<option value="everyone" selected>Visible to everyone</option>
-			<option value="group">Controlled per group</option>
-		</select>
-
-		<div style="display:none" id="groups">
-			Please manage the group visibility via <a href="{$url}admin/aclmanager/groups">the group manager</a> once you have created the sidebox
-		</div>
-	</form>
-
-	<span id="custom_field" style="padding-top:0px;padding-bottom:0px;">
-		<label for="text">Content</label>
-		{$fusionEditor}
-	</span>
-
-	<form onSubmit="Sidebox.create(document.getElementById('submit_form')); return false">
-		<input type="submit" value="Submit sidebox" />
-	</form>
-</section>
-
-<script>
-	require([Config.URL + "application/themes/admin/js/mli.js"], function()
-	{
-		new MultiLanguageInput($("#displayName"));
-	});
-</script>
+	</tbody>
+</table>
+</div>
+</div>

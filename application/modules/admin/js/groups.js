@@ -29,17 +29,29 @@ var Groups = {
 		var identifier = this.identifier,
 			removeLink = this.Links.remove;
 
-		UI.confirm("Do you really want to delete this group?", "Yes", function()
-		{
+		Swal.fire({
+			title: 'Do you really want to delete this group?',
+			text: "You won't be able to revert this!",
+			icon: 'warning',
+			showCancelButton: true,
+			confirmButtonColor: '#3085d6',
+			cancelButtonColor: '#d33',
+			confirmButtonText: 'Yes, delete it!'
+		}).then((result) => {
+		if (result.isConfirmed) {
 			$("#" + identifier + "_count").html(parseInt($("#" + identifier + "_count").html()) - 1);
 
-			$(element).parents("li").slideUp(300, function()
+			$(element).parents("tr").slideUp(300, function()
 			{
 				$(this).remove();
 			});
 
-			$.get(Config.URL + removeLink + id);
-		});
+			$.get(Config.URL + removeLink + id, function(data)
+			{
+				console.log(data);
+			});
+		}
+		})
 	},
 
 	/**
@@ -93,7 +105,18 @@ var Groups = {
 		$.post(Config.URL + this.Links.create, values, function(data)
 		{
 			console.log(data);
-			eval(data);
+			if(data == '1')
+			{
+				window.location.reload(true);
+			}
+			else
+			{
+				Swal.fire({
+					icon: 'error',
+					title: 'Oops...',
+					text: data,
+				})
+			}
 		});
 	},
 
@@ -125,7 +148,21 @@ var Groups = {
 		$.post(Config.URL + this.Links.save + id, values, function(data)
 		{
 			console.log(data);
-			eval(data);
+			if(data == '1')
+			{
+				Swal.fire({
+					icon: "success",
+					title: "The group has been saved!",
+				});
+			}
+			else
+			{
+				Swal.fire({
+					icon: 'error',
+					title: 'Oops...',
+					text: data,
+				})
+			}
 		});
 	},
 
@@ -152,24 +189,39 @@ var Groups = {
 
 		if(isYourself)
 		{
-			UI.confirm("<div style='margin-bottom:10px;font-size:16px;'>Are you sure you want to remove yourself from this group?</div><div style='margin-bottom:10px;font-size:10px;color:red;'>You may revoke your admin panel access by doing so.</div>", "Yes", proceed);
+			Swal.fire({
+			title: 'Are you sure you want to remove yourself from this group?',
+			text: "You may revoke your admin panel access by doing so.",
+			icon: 'warning',
+			showCancelButton: true,
+			confirmButtonColor: '#3085d6',
+			cancelButtonColor: '#d33',
+			confirmButtonText: 'Yes, remove me!'
+		}).then((result) => {
+		if (result.isConfirmed) {
+			proceed();
+		}
+		})
 		}
 		else
 		{
 			proceed();
 		}
+		
 	},
 
 	addAccount: function(field, groupId)
 	{
 		field = $(field);
-
-		UI.confirm('<input type="text" id="add_member_name" placeholder="Enter username..." autofocus/>', 'Add', function()
-		{
+		
+		Swal.fire({
+			title: 'Add member',
+			html: '<input class="swal2-input" type="text" id="add_member_name" placeholder="Enter username..." autofocus>',
+		}).then(function(result) {
+		if (result.isConfirmed) {
 			var name = $("#add_member_name").val();
 
-			var newItem = $('<a href="javascript:void(0)" onClick="Groups.removeAccount(\'' + name + '\', this, ' + groupId + ')">\
-								<img src="' + Config.URL + 'application/images/icons/delete.png" />\
+			var newItem = $('<a class="btn btn-danger btn-sm" href="javascript:void(0)" onClick="Groups.removeAccount(\'' + name + '\', this, ' + groupId + ')">\
 								' + name + '\
 							</a>');
 
@@ -187,10 +239,15 @@ var Groups = {
 			{
 				if(response == "invalid")
 				{
-					UI.alert("The account doesn't exist");
+					Swal.fire({
+						icon: 'error',
+						title: 'Oops...',
+						text: "The account doesn't exist",
+					})
 					Groups.removeAccount(false, newItem);
 				}
 			});
-		});
+		}
+		})
 	}
 }

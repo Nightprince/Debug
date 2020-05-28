@@ -11,7 +11,7 @@ var Router = {
 	initialize: function()
 	{
 		// Check for pushState support
-		if(history.pushState)
+		/*if(history.pushState)
 		{
 			// Assign AJAX loading behavior to all our internal links
 			$("a[href*='" + Config.URL + "']").each(function()
@@ -42,7 +42,7 @@ var Router = {
 					});
 				}
 			});
-		}
+		}*/
 	},
 
 	/**
@@ -107,7 +107,6 @@ var Router = {
 							js: null,
 							css: null,
 							slider: false,
-							sidebox: false,
 							language: false
 						};
 					}
@@ -155,15 +154,6 @@ var Router = {
 					{
 						$("#" + Config.Slider.id).hide();
 					}
-
-					if(data.sidebox)
-					{
-						$("#" + Config.Sidebox.id).show();
-					}
-					else
-					{
-						$("#" + Config.Sidebox.id).hide();
-					}
 				}
 			}).fail(function()
 			{
@@ -171,7 +161,7 @@ var Router = {
 				{
 					$("body").css("cursor", "default");
 					$("title").html("FusionCMS");
-					UI.alert("Something went wrong! Attempting to load the page directly... <center style='margin-top:20px;'><img src='" + Config.URL + "application/images/modal-ajax.gif' /></center>", 3000);
+					UI.alert('Something went wrong! Attempting to load the page directly... <div class="lds-ring"><div></div><div></div><div></div><div></div></div>', 3000);
 
 					setTimeout(function()
 					{

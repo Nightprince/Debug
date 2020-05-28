@@ -9,15 +9,27 @@ var Settings = {
 	{
 		if($("#realm_count").html() == "1")
 		{
-			UI.alert("You must always have at least one realm!");
+			Swal.fire({
+				icon: 'error',
+				title: 'Oops...',
+				text: 'You must always have at least one realm!',
+			})
 		}
 		else
 		{
-			UI.confirm("Do you really want to delete this realm?", "Yes", function()
-			{
+			Swal.fire({
+				title: 'Do you really want to delete this realm?',
+				text: "You won't be able to revert this!",
+				icon: 'warning',
+				showCancelButton: true,
+				confirmButtonColor: '#3085d6',
+				cancelButtonColor: '#d33',
+				confirmButtonText: 'Yes, delete it!'
+			}).then((result) => {
+			if (result.isConfirmed) {
 				$("#realm_count").html(parseInt($("#realm_count").html()) - 1);
 
-				$(element).parents("li").slideUp(300, function()
+				$(element).parents("tr").slideUp(300, function()
 				{
 					$(this).remove();
 				});
@@ -26,31 +38,22 @@ var Settings = {
 				{
 					console.log(data);
 				});
-			});
+			}
+			})
 		}
 	},
 
 	showAddRealm: function()
 	{
-		if($("#non_realm").is(":visible"))
+		if ($("#add_realm").css('display') == 'none')
 		{
-			$("#non_realm").fadeOut(100, function()
-			{
-				$('#realm_settings').fadeOut(100, function()
-				{
-					$('#add_realm').fadeIn(100);
-				});
-			});
+			var div = document.getElementById('add_realm');
+			div.style.display = 'block';
 		}
 		else
 		{
-			$('#add_realm').fadeOut(100, function()
-			{
-				$("#realm_settings").fadeIn(100, function()
-				{
-					$('#non_realm').fadeIn(100);
-				});
-			});
+			var div = document.getElementById('add_realm');
+			div.style.display = 'none';
 		}
 	},
 
@@ -101,7 +104,7 @@ var Settings = {
 		{
 			if(/^[0-9]*$/.test(id))
 			{
-				var realmHTML = '<li>\
+				var realmHTML = '<li class="list-group-item">\
 								<table width="100%">\
 									<tr>\
 										<td width="10%">ID: ' + id + '</td>\
@@ -168,7 +171,12 @@ var Settings = {
 			}
 			else
 			{
-				UI.alert(result);
+				console.log(data);
+				Swal.fire({
+					icon: 'error',
+					title: 'Oops...',
+					text: result,
+				})
 			}
 		});
 	},
@@ -191,18 +199,14 @@ var Settings = {
 			title:$("#title").val(),
 			server_name:$("#server_name").val(),
 			realmlist:$("#realmlist").val(),
-			disabled_expansions:$("#disabled_expansions").val(),
+			max_expansion:$("#max_expansion").val(),
 			keywords:$("#keywords").val(),
 			description:$("#description").val(),
 			analytics:$("#analytics").val(),
 			vote_reminder:$("#vote_reminder").val(),
 			vote_reminder_image:$("#vote_reminder_image").val(),
 			reminder_interval:$("#reminder_interval").val(),
-			cdn:$("#cdn").val(),
 			has_smtp:$("#has_smtp").val(),
-			use_captcha:$("#captcha").val(),
-			recaptcha_site_key:$("#site_key").val(),
-			recaptcha_secret_key:$("#secret_key").val(),
 			csrf_token_name: Config.CSRF
 		};
 
@@ -210,11 +214,20 @@ var Settings = {
 		{
 			if(response == "yes")
 			{
-				$("#website_ajax").html('Settings have been saved!');
+				console.log(data);
+				Swal.fire({
+					icon: "success",
+					title: "Website settings have been saved!",
+				});
 			}
 			else
 			{
-				UI.alert(response);
+				console.log(data);
+				Swal.fire({
+					icon: 'error',
+					title: 'Oops...',
+					text: response,
+				})
 			}
 		});
 	},
@@ -223,10 +236,13 @@ var Settings = {
 	{
 		var data = {
 			use_own_smtp_settings:$("#use_own_smtp_settings").val(),
+			smtp_protocol:$("#smtp_protocol").val(),
+			smtp_sender:$("#smtp_sender").val(),
 			smtp_host:$("#smtp_host").val(),
 			smtp_user:$("#smtp_user").val(),
 			smtp_pass:$("#smtp_pass").val(),
 			smtp_port:$("#smtp_port").val(),
+			smtp_crypto:$("#smtp_crypto").val(),
 			csrf_token_name: Config.CSRF
 		};
 
@@ -234,11 +250,20 @@ var Settings = {
 		{
 			if(response == "yes")
 			{
-				$("#smtp_ajax").html('Settings have been saved!');
+				console.log(data);
+				Swal.fire({
+					icon: "success",
+					title: "SMTP settings have been saved!",
+				});
 			}
 			else
 			{
-				UI.alert(response);
+				console.log(data);
+				Swal.fire({
+					icon: 'error',
+					title: 'Oops...',
+					text: response,
+				})
 			}
 		});
 	},
@@ -247,6 +272,8 @@ var Settings = {
 	{
 		var data = {
 			disable_visitor_graph:$("#disable_visitor_graph").val(),
+			disable_realm_status:$("#disable_realm_status").val(),
+			cache:$("#cache").val(),
 			csrf_token_name: Config.CSRF
 		};
 
@@ -254,20 +281,201 @@ var Settings = {
 		{
 			if(response == "yes")
 			{
-				$("#performance_ajax").html('Settings have been saved!');
+				console.log(data);
+				Swal.fire({
+					icon: "success",
+					title: "Performance settings have been saved!",
+				});
 			}
 			else
 			{
-				UI.alert(response);
+				console.log(data);
+				Swal.fire({
+					icon: 'error',
+					title: 'Oops...',
+					text: response,
+				})
 			}
 		});
+	},
+	
+	saveSocialMedia: function()
+	{
+		var values = {
+			fb_link:$("#fb_link").val(),
+			twitter_link:$("#twitter_link").val(),
+			yt_link:$("#yt_link").val(),
+			discord_link:$("#discord_link").val(),
+			insta_link:$("#insta_link").val(),
+			csrf_token_name: Config.CSRF
+		};
+
+		$.post(Config.URL + "admin/settings/saveSocialMedia", values, function(response)
+		{
+			if(response == "yes")
+			{
+				console.log(values);
+				Swal.fire({
+					icon: "success",
+					title: "Social media links have been saved!",
+				});
+			}
+			else
+			{
+				console.log(values);
+				Swal.fire({
+					icon: 'error',
+					title: 'Oops...',
+					text: response,
+				})
+			}
+		});
+	},
+
+	saveCDN: function()
+	{
+		var values = {
+			cdn_value:$("#cdn_value").val(),
+			cdn_link:$("#cdn_link").val(),
+			csrf_token_name: Config.CSRF
+		};
+
+		$.post(Config.URL + "admin/settings/saveCDN", values, function(response)
+		{
+			if(response == "yes")
+			{
+				console.log(values);
+				Swal.fire({
+					icon: "success",
+					title: "CDN have been saved!",
+				});
+			}
+			else
+			{
+				console.log(values);
+				Swal.fire({
+					icon: 'error',
+					title: 'Oops...',
+					text: response,
+				})
+			}
+		});
+	},
+
+	saveSecurity: function()
+	{
+		var values = {
+			use_captcha:$("#use_captcha").val(),
+			captcha_attemps:$("#captcha_attemps").val(),
+			block_attemps:$("#block_attemps").val(),
+			block_duration:$("#block_duration").val(),
+			csrf_token_name: Config.CSRF
+		};
+
+		$.post(Config.URL + "admin/settings/saveSecurity", values, function(response)
+		{
+			if(response == "yes")
+			{
+				console.log(values);
+				Swal.fire({
+					icon: "success",
+					title: "Security settings has been saved!",
+				});
+			}
+			else
+			{
+				console.log(values);
+				Swal.fire({
+					icon: 'error',
+					title: 'Oops...',
+					text: response,
+				})
+			}
+		});
+	},
+
+	mailDebug: function()
+	{
+		var values = {csrf_token_name: Config.CSRF};
+        var protocol = $("#smtp_protocol").val();
+        var host = $("#smtp_host").val();
+        var user = $("#smtp_user").val();
+		var pass = $("#smtp_pass").val();
+        var port = $("#smtp_port").val();
+		var crypto = $("#smtp_crypto").val();
+
+		values['protocol'] = protocol;
+		values['host'] = host;
+		values['user'] = user;
+		values['pass'] = pass;
+		values['port'] = port;
+		values['crypto'] = crypto;
+
+		$.post(Config.URL + "admin/settings/mailDebug", values, function(data)
+		{
+			console.log(data);
+			try {
+				data = JSON.parse(data);
+
+				if(data['error']) {
+					Swal.fire({
+					icon: 'error',
+					html: data['error'],
+					allowOutsideClick: false
+				})
+					return;
+				} else {
+					Swal.fire({
+					icon: "success",
+					title: 'Mail sent!',
+					text: data['success'],
+				})
+				}
+			} catch(e) {
+				console.error(e);
+				return;
+			}
+		});
+	},
+
+	toggleSMTPusage: function()
+	{
+		if ($("#use_smtp").css('display') == 'none')
+		{
+			$("#use_smtp").show();
+			if( $('[value="smtp"][selected="selected"]') ) {
+				var div = document.getElementById('toggle_protocol');
+				div.style.display = 'block';
+			}
+		}
+		else
+		{
+			$("#use_smtp").hide();
+			$("#toggle_protocol").hide();
+		}
+
+	},
+
+	toggleProtocol: function(element)
+	{
+		switch(element.value)
+		{
+			case "mail":
+				$("#toggle_protocol").hide();
+			break;
+
+			case "smtp":
+				$("#toggle_protocol").show();
+			break;
+		}
+
 	},
 
 	submitConfig: function(form, moduleName, configName)
 	{
 		var values = {csrf_token_name: Config.CSRF};
-
-		$(form).children("input, select").each(function()
+		
+		$("input, select", $(form)).each(function(i, e)
 		{
 			if($(this).attr("type") != "submit")
 			{
@@ -277,8 +485,23 @@ var Settings = {
 
 		$.post(Config.URL + "admin/edit/save/" + moduleName + "/" + configName, values, function(data)
 		{
-			console.log(data);
-			UI.alert(data);
+			if(data == "yes")
+			{
+				console.log(data);
+				Swal.fire({
+					icon: "success",
+					title: "The settings have been saved!",
+				});
+			}
+			else
+			{
+				console.log(data);
+				Swal.fire({
+					icon: 'error',
+					title: 'Oops...',
+					text: data,
+				})
+			}
 		});
 	},
 
@@ -289,11 +512,25 @@ var Settings = {
 			source: $("#source_" + configName).val()
 		};
 
-		console.log(values);
-
 		$.post(Config.URL + "admin/edit/saveSource/" + moduleName + "/" + configName, values, function(data)
 		{
-			UI.alert(data);
+			if(data == "yes")
+			{
+				console.log(data);
+				Swal.fire({
+					icon: "success",
+					title: "The settings have been saved!",
+				});
+			}
+			else
+			{
+				console.log(data);
+				Swal.fire({
+					icon: 'error',
+					title: 'Oops...',
+					text: data,
+				})
+			}
 		});
 	},
 
@@ -321,20 +558,21 @@ var Settings = {
 
 	submitMessage: function(form)
 	{
-		var values = {csrf_token_name: Config.CSRF};
+		var data = {
+			message_enabled:$("#message_enabled").val(),
+			message_headline:$("#message_headline").val(),
+			message_headline_size:$("#message_headline_size").val(),
+			message_text:$("#message_text").val(),
+			csrf_token_name: Config.CSRF
+		};
 
-		$(form).children("input, select, textarea").each(function()
-		{
-			if($(this).attr("type") != "submit")
-			{
-				values[$(this).attr("name")] = $(this).val();
-			}
-		});
-
-		$.post(Config.URL + "admin/message/save", values, function(data)
+		$.post(Config.URL + "admin/message/save", data, function(response)
 		{
 			console.log(data);
-			UI.alert(data);
+			Swal.fire({
+				icon: 'success',
+				title: response,
+			})
 		});
 	},
 
@@ -369,5 +607,68 @@ var Settings = {
 				$("#three").show();
 			break;
 		}
+	},
+
+	showHelp: function(element)
+	{
+		Swal.fire({
+			html:'<h2>mail</h2>' +
+
+				'<p>The default value is <code>mail</code>.</p>' +
+
+				'<p>It means that the CodeIgniter library will use the internal <a href="https://www.php.net/manual/en/function.mail.php" rel="noreferrer"><code>mail()</code> PHP function</a> to try to send the mail.</p>' +
+
+				'<p>How does it works? How does PHP know how to send the mail?</p>' +
+
+				'<blockquote>' +
+				'<p>On Unix/Linux it invokes the <code>sendmail</code> binary, which then uses the mail' +
+				'configuration to route the email. On Windows, it sends to a SMTP' +
+				'server. In both cases the sysadmin sets up the mail system.</p>' +
+				'</blockquote>' +
+
+				'<p>In any case, the <code>sendmail</code> binary will then use a SMTP server to send the mail, as configured by the admin.</p>' +
+
+				'<h2>sendmail (linux only)</h2>' +
+
+				'<p>The second possible value is <code>sendmail</code>.</p>' +
+
+				'<p>Using <code>sendmail</code> value for the configuration means that the CodeIgniter library will use directly the <code>sendmail</code> binary without using the PHP <code>mail()</code> function.</p>' +
+
+				'<p>The path to the binary can be configured through the option <code>mailpath</code> (which is <code>/usr/sbin/sendmail</code> by default).</p>' +
+
+				'<p>This means that this can only be used on Linux/Unix platform, as Windows doesnt have any <code>sendmail</code> binary.</p>' +
+
+				'<p>Now why would you want to use the <code>sendmail</code> binary directly since the PHP internal <code>mail()</code> function already uses it (and is compatible with Windows)?</p>' +
+
+				'<p>Well, for one the <code>mail()</code> internal function could be disabled in your PHP environment by your hosting provider. Or you may want to call a special <code>sendmail</code> binary different than the one used by the PHP internal function.</p>' +
+
+				'<p>In any case, the <code>sendmail</code> binary will then use a SMTP server to send the mail, as configured by the admin.</p>' +
+
+				'<h2>SMTP</h2>' +
+
+				'<p>The last possible value is <code>smtp</code>.</p>' +
+
+				'<p>Using <code>smtp</code> value for the configuration means that the CodeIgniter library will connect directly to a SMTP server in order to send the mail.</p>' +
+
+				'<p>The way the connection is performed can be configured with the relevant <code>smtp_*</code> options, which are <code>smtp_host</code>, <code>smtp_user</code>, <code>smtp_pass</code>, <code>smtp_port</code> and so on...</p>' +
+
+				'<p>This option is really useful when you are not the admin of the server (e.g. in a shared hosting environment) and thus cant configure the SMTP provider for the server.</p>' +
+
+				'<p>It is also better to choose this rather than the other alternative, because your application will no longer depends on the server proper configuration.</p>' +
+
+				'<hr>' +
+
+				'<h2>Summary</h2>' +
+
+				'<p>The main issue here is that the class and the documentation wrongly use the term <code>protocol</code>.</p>' +
+
+				'<p>SMTP is the protocol for email.</p>' +
+
+				'<p>The option <code>mail</code>, <code>sendmail</code> and <code>smtp</code> are more like <em>endpoints</em>, or <em>sending methods</em>, i.e. what the library should use in order to send the mail.</p>' +
+
+				'<p>I hope this clarifies the documentation a little bit.</p>',
+			allowOutsideClick: false,
+			showCancelButton: false,
+		})
 	}
 }

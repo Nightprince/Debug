@@ -1,32 +1,33 @@
 {
 	"name": "Admin panel",
 	"description": "Default set of tools and pages for the admin panel",
+	"version": "2.0.0",
+	"date": "2023-05-30",
 	"author": {
 		"name": "FusionCMS",
-		"website": "https:\/\/github.com\/Yekta-Core\/FusionCMS"
+		"website": "https:\/\/fusion-hub.com"
 	},
 
 	"permissions": {
 		"view": { "default": false, "description": "View (log into) the admin panel. Required for all admin-tools." },
-		
+
 		"viewPermissions": { "default": false, "description": "View the permissions" },
 		"addPermissions": { "default": false, "description": "Add groups, roles and permissions." },
 		"editPermissions": { "default": false, "description": "Edit groups, roles and permissions." },
 		"deletePermissions": { "default": false, "description": "Delete groups, roles and permissions." },
-		
+
 		"toggleModules": { "default": false, "description": "Enable or disable modules" },
 		"editModuleConfigs": { "default": false, "description": "Edit the config files of modules" },
-		
-		"changeThemeHeader": { "default": false, "description": "Change the theme header image URL" },
+
 		"changeTheme": { "default": false, "description": "Change the theme" },
-		
+
 		"viewLogs": { "default": false, "description": "View the logs" },
-		
+
 		"viewMenuLinks": { "default": false, "description": "Can view the menu links" },
 		"addMenuLinks": { "default": false, "description": "Add menu links." },
 		"editMenuLinks": { "default": false, "description": "Edit menu links." },
 		"deleteMenuLinks": { "default": false, "description": "Delete menu links." },
-		
+
 		"viewSideboxes": { "default": false, "description": "Can view the sideboxes" },
 		"addSideboxes": { "default": false, "description": "Add sideboxes." },
 		"editSideboxes": { "default": false, "description": "Edit sideboxes." },
@@ -35,8 +36,8 @@
 		"viewLanguages": { "default": false, "description": "Can view the languages page" },
 		"changeDefaultLanguage": { "default": false, "description": "Can change the default language" },
 
-		"viewMessage": { "default": false, "description": "View the global announcement message" },
-		"toggleMessage": { "default": false, "description": "Toggle the global announcement message" },
+		"viewMessage": { "default": false, "description": "View the global maintenance message" },
+		"toggleMessage": { "default": false, "description": "Toggle the global maintenance message" },
 
 		"viewCache": { "default": false, "description": "View the cache manager" },
 		"emptyCache": { "default": false, "description": "Empty the cache" },
@@ -51,7 +52,12 @@
 
 		"viewSessions": { "default": false, "description": "Can view the active sessions" },
 
-		"editSystemSettings": { "default": false, "description": "Can edit system settings and realms" }
+		"editSystemSettings": { "default": false, "description": "Can edit system settings and realms" },
+
+		"viewBackups": { "default": false, "description": "Can view database backup page" },
+		"generateBackup": { "default": false, "description": "Can generate a backup manually" },
+		"editBackupSettings": { "default": false, "description": "Can edit backup settings" },
+		"executeBackupActions": { "default": false, "description": "Can execute backup actions" }
 	},
 
 	"roles": {
@@ -139,8 +145,8 @@
 			}
 		},
 
-		"globalAnnouncement": {
-			"description": "Toggle the global announcement. <font style='color:red;'>Admin-tool</font>",
+		"globalMaintenance": {
+			"description": "Toggle the global maintenance. <font style='color:red;'>Admin-tool</font>",
 			"dangerLevel": 3,
 
 			"permissions": {
@@ -186,7 +192,6 @@
 			"dangerLevel": 3,
 
 			"permissions": {
-				"changeThemeHeader": true,
 				"changeTheme": true
 			}
 		},
@@ -198,14 +203,49 @@
 			"permissions": {
 				"editSystemSettings": true
 			}
+		},
+
+		"viewBackups": {
+			"description": "View database backup page. <font style='color:red;'>Admin-tool. HIGH SECURITY RISK! BE CAREFUL!</font>",
+			"dangerLevel": 3,
+
+			"permissions": {
+				"viewBackups": true
+			}
+		},
+
+		"generateBackup": {
+			"description": "Generate database backup. <font style='color:red;'>Admin-tool. HIGH SECURITY RISK! BE CAREFUL!</font>",
+			"dangerLevel": 3,
+
+			"permissions": {
+				"generateBackup": true
+			}
+		},
+
+		"editBackupSettings": {
+			"description": "Edit database backup settings. <font style='color:red;'>Admin-tool. HIGH SECURITY RISK! BE CAREFUL!</font>",
+			"dangerLevel": 3,
+
+			"permissions": {
+				"editBackupSettings": true
+			}
+		},
+
+		"executeBackupActions": {
+			"description": "Can execute backup actions. <font style='color:red;'>Admin-tool. HIGH SECURITY RISK! BE CAREFUL!</font>",
+			"dangerLevel": 3,
+
+			"permissions": {
+				"executeBackupActions": true
+			}
 		}
 	},
 
 	"admin": [
-
 		{
 			"text": "Website",
-			"icon": "cursor",
+			"icon": "link",
 			"links": [
 				{
 					"text": "Menu links",
@@ -222,22 +262,15 @@
 				},
 
 				{
-					"text": "Global announcement",
-					"icon": "power",
+					"text": "Global maintenance",
+					"icon": "power-off",
 					"controller": "message",
 					"requirePermission": "viewMessage"
 				},
 
 				{
-					"text": "Website logs",
-					"icon": "cursor",
-					"controller": "logging",
-					"requirePermission": "viewLogs"
-				},
-
-				{
 					"text": "Manage cache",
-					"icon": "database",
+					"icon": "power-off",
 					"controller": "cachemanager",
 					"requirePermission": "viewCache"
 				},
@@ -270,17 +303,43 @@
 				},
 				
 				{
-					"text": "User groups &amp; permissions",
-					"icon": "settings",
+					"text": "User group &amp; permission",
+					"icon": "cogs",
 					"controller": "aclmanager",
 					"requirePermission": "viewPermissions"
 				},
 
 				{
 					"text": "Active sessions",
-					"icon": "cursor",
+					"icon": "list-ul",
 					"controller": "sessions",
 					"requirePermission": "viewSessions"
+				}
+			]
+		},
+		{
+			"text":"Logs",
+			"icon":"list",
+			"links": [
+				{
+					"text": "HP Error Logs",
+					"icon": "list-ul",
+					"controller": "hplogs",
+					"requirePermission": "editSystemSettings"
+				},
+				
+				{
+					"text": "Website logs",
+					"icon": "list-ul",
+					"controller": "logging",
+					"requirePermission": "viewLogs"
+				},
+
+				{
+					"text": "Email logs",
+					"icon": "list-ul",
+					"controller": "emaillogs",
+					"requirePermission": "editSystemSettings"
 				}
 			]
 		}

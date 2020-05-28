@@ -31,40 +31,29 @@ var Topsites = {
 		var identifier = this.identifier,
 			removeLink = this.Links.remove;
 
-		UI.confirm("Do you really want to delete this location?", "Yes", function()
-		{
+		Swal.fire({
+			title: 'Do you really want to delete this vote site?',
+			text: "You won't be able to revert this!",
+			icon: 'warning',
+			showCancelButton: true,
+			confirmButtonColor: '#3085d6',
+			cancelButtonColor: '#d33',
+			confirmButtonText: 'Yes, delete it!'
+		}).then((result) => {
+		if (result.isConfirmed) {
 			$("#" + identifier + "_count").html(parseInt($("#" + identifier + "_count").html()) - 1);
 
-			$(element).parents("li").slideUp(300, function()
+			$(element).parents("tr").slideUp(300, function()
 			{
 				$(this).remove();
 			});
 
-			$.get(Config.URL + removeLink + id);
-		});
-	},
-
-	/**
-	 * Toggle between the "add" form and the list
-	 */
-	add: function()
-	{
-		var id = this.identifier;
-
-		if($("#add_" + id).is(":visible"))
-		{
-			$("#add_" + id).fadeOut(150, function()
+			$.get(Config.URL + removeLink + id, function(data)
 			{
-				$("#main_" + id).fadeIn(150);
+				console.log(data);
 			});
 		}
-		else
-		{
-			$("#main_" + id).fadeOut(150, function()
-			{
-				$("#add_" + id).fadeIn(150);
-			});
-		}
+		})
 	},
 
 	/**
@@ -73,25 +62,31 @@ var Topsites = {
 	 */
 	create: function(form)
 	{
-		var values = {csrf_token_name: Config.CSRF};
+		var values = {
+			vote_url:$("#vote_url").val(),
+			vote_sitename:$("#vote_sitename").val(),
+			vote_image:$("#vote_image").val(),
+			hour_interval:$("#hour_interval").val(),
+			points_per_vote:$("#points_per_vote").val(),
+			callback_enabled:$("#callback_enabled").val(),
+			csrf_token_name: Config.CSRF
+		};
 
-		$(form).find("input, select").each(function()
+		$.post(Config.URL + this.Links.create, values, function(response)
 		{
-			if($(this).attr("type") != "submit")
+			if(response == "yes")
 			{
-				values[$(this).attr("name")] = $(this).val();
+				window.location = Config.URL + "vote/admin";
 			}
-		});
-
-		if(this.fusionEditor != false)
-		{
-			values[this.fusionEditor.replace("#", "")] = $(this.fusionEditor).html();
-		}
-
-		$.post(Config.URL + this.Links.create, values, function(data)
-		{
-			console.log(data);
-			eval(data);
+			else
+			{
+				console.log(values);
+				Swal.fire({
+					icon: 'error',
+					title: 'Oops...',
+					text: response,
+				})
+			}
 		});
 	},
 
@@ -162,7 +157,7 @@ var Topsites = {
 					$('#callback_form .form .dropdown h3 .sitename').remove();
 					$('#callback_form .form .dropdown h3').append('<span class="sitename" style="display:inline;margin:0;padding:0">' + data.url + '</span>');
 					$('#callback_form .form .dropdown div').html(data.callback_help);
-					UI.dropdown.initialize();
+					dropdown.initialize();
 					
 					// display callback form
 					$('#callback_form .not-supported').hide();
@@ -222,3 +217,30 @@ var Topsites = {
 		}
 	}
 }
+	
+	var dropdown = {
+		initialize: function()
+		{
+			$(document).ready(function() {
+				dropdown.create('.dropdown');
+			});
+		},
+		
+		create: function(element)
+		{
+			$(element)
+				.not('[data-dropdown-initialized]')
+				.attr('data-dropdown-initialized', 'true')
+				.children('h3')
+				.bind('click', function() 
+				{
+					$(this).next('div').slideToggle(200, function() {
+
+						if ($(this).is(':visible'))
+							$(this).parent('.dropdown').addClass('active');
+						else
+							$(this).parent('.dropdown').removeClass('active');
+					});
+				});
+		}
+	}

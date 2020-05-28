@@ -1,6 +1,8 @@
 <?php
-defined('BASEPATH') OR exit('No direct script access allowed');
 
+if (! defined('BASEPATH')) {
+    exit('No direct script access allowed');
+}
 /*
 | -------------------------------------------------------------------
 | AUTO-LOADER
@@ -22,43 +24,39 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 |
 | 1. Packages
 | 2. Libraries
-| 3. Drivers
-| 4. Helper files
-| 5. Custom config files
-| 6. Language files
-| 7. Models
+| 3. Helper files
+| 4. Custom config files
+| 5. Language files
+| 6. Models
 |
 */
 
 /*
 | -------------------------------------------------------------------
-|  Auto-load Packages
+|  Auto-load Packges
 | -------------------------------------------------------------------
 | Prototype:
 |
 |  $autoload['packages'] = array(APPPATH.'third_party', '/usr/local/shared');
 |
 */
+
 $autoload['packages'] = array();
+
 
 /*
 | -------------------------------------------------------------------
 |  Auto-load Libraries
 | -------------------------------------------------------------------
-| These are the classes located in system/libraries/ or your
-| application/libraries/ directory, with the addition of the
-| 'database' library, which is somewhat of a special case.
+| These are the classes located in the system/libraries folder
+| or in your application/libraries folder.
 |
 | Prototype:
 |
-|	$autoload['libraries'] = array('database', 'email', 'session');
-|
-| You can also supply an alternative library name to be assigned
-| in the controller:
-|
-|	$autoload['libraries'] = array('user_agent' => 'ua');
+|   $autoload['libraries'] = array('database', 'session', 'xmlrpc');
 */
-$autoload['libraries'] = array('FusionCache' => 'cache', 'database', 'session', 'smartyengine', 'template', 'language', 'realms', 'acl', 'user', 'logger', 'plugins', 'recaptcha');
+
+$autoload['libraries'] = array('security', 'cache', 'database', 'session', 'ci_smarty' => 'smarty', 'template', 'language', 'realms', 'acl', 'user', 'logger', 'plugins', 'dbbackup', 'captcha');
 
 /*
 | -------------------------------------------------------------------
@@ -71,15 +69,10 @@ $autoload['libraries'] = array('FusionCache' => 'cache', 'database', 'session', 
 |
 | Prototype:
 |
-|	$autoload['drivers'] = array('cache');
-|
-| You can also supply an alternative property name to be assigned in
-| the controller:
-|
-|	$autoload['drivers'] = array('cache' => 'cch');
-|
+|   $autoload['drivers'] = array('cache');
 */
-$autoload['drivers'] = array();
+$autoload['drivers'] = array('session');
+
 
 /*
 | -------------------------------------------------------------------
@@ -87,9 +80,11 @@ $autoload['drivers'] = array();
 | -------------------------------------------------------------------
 | Prototype:
 |
-|	$autoload['helper'] = array('url', 'file');
+|   $autoload['helper'] = array('url', 'file');
 */
-$autoload['helper'] = array('url', 'smiley', 'emulator', 'form', 'text', 'lang', 'breadcumb', 'permission');
+
+$autoload['helper'] = array('url', 'emulator', 'form', 'text', 'lang', 'breadcumb', 'permission');
+
 
 /*
 | -------------------------------------------------------------------
@@ -97,13 +92,15 @@ $autoload['helper'] = array('url', 'smiley', 'emulator', 'form', 'text', 'lang',
 | -------------------------------------------------------------------
 | Prototype:
 |
-|	$autoload['config'] = array('config1', 'config2');
+|   $autoload['config'] = array('config1', 'config2');
 |
 | NOTE: This item is intended for use ONLY if you have created custom
 | config files.  Otherwise, leave it blank.
 |
 */
-$autoload['config'] = array('default_language', 'version', 'acl_defaults', 'fusion', 'message', 'recaptcha');
+
+$autoload['config'] = array('language', 'version', 'acl_defaults', 'fusion', 'message', 'backups', 'cdn', 'captcha', 'social_media');
+
 
 /*
 | -------------------------------------------------------------------
@@ -111,13 +108,15 @@ $autoload['config'] = array('default_language', 'version', 'acl_defaults', 'fusi
 | -------------------------------------------------------------------
 | Prototype:
 |
-|	$autoload['language'] = array('lang1', 'lang2');
+|   $autoload['language'] = array('lang1', 'lang2');
 |
 | NOTE: Do not include the "_lang" part of your file.  For example
 | "codeigniter_lang.php" would be referenced as array('codeigniter');
 |
 */
+
 $autoload['language'] = array();
+
 
 /*
 | -------------------------------------------------------------------
@@ -125,11 +124,12 @@ $autoload['language'] = array();
 | -------------------------------------------------------------------
 | Prototype:
 |
-|	$autoload['model'] = array('first_model', 'second_model');
+|   $autoload['model'] = array('model1', 'model2');
 |
-| You can also supply an alternative model name to be assigned
-| in the controller:
-|
-|	$autoload['model'] = array('first_model' => 'first');
 */
+
 $autoload['model'] = array('cms_model', 'external_account_model', 'internal_user_model', 'acl_model');
+
+
+/* End of file autoload.php */
+/* Location: ./application/config/autoload.php */

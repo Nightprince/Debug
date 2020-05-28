@@ -28,40 +28,29 @@ var Poll = {
 		var identifier = this.identifier,
 			removeLink = this.Links.remove;
 
-		UI.confirm("Do you really want to delete this poll?", "Yes", function()
-		{
+		Swal.fire({
+			title: 'Do you really want to delete this poll?',
+			text: "You won't be able to revert this!",
+			icon: 'warning',
+			showCancelButton: true,
+			confirmButtonColor: '#3085d6',
+			cancelButtonColor: '#d33',
+			confirmButtonText: 'Yes, delete it!'
+		}).then((result) => {
+		if (result.isConfirmed) {
 			$("#" + identifier + "_count").html(parseInt($("#" + identifier + "_count").html()) - 1);
 
-			$(element).parents("li").slideUp(300, function()
+			$(element).parents(".card-header").slideUp(300, function()
 			{
 				$(this).remove();
 			});
 
-			$.get(Config.URL + removeLink + id);
-		});
-	},
-
-	/**
-	 * Toggle between the "add" form and the list
-	 */
-	add: function()
-	{
-		var id = this.identifier;
-
-		if($("#add_" + id).is(":visible"))
-		{
-			$("#add_" + id).fadeOut(150, function()
+			$.get(Config.URL + removeLink + id, function(data)
 			{
-				$("#main_" + id).fadeIn(150);
+				console.log(data);
 			});
 		}
-		else
-		{
-			$("#main_" + id).fadeOut(150, function()
-			{
-				$("#add_" + id).fadeIn(150);
-			});
-		}
+		})
 	},
 
 	/**
@@ -87,8 +76,19 @@ var Poll = {
 
 		$.post(Config.URL + this.Links.create, values, function(data)
 		{
-			console.log(data);
-			eval(data);
+			if(data == "yes")
+			{
+				window.location = Config.URL + "sidebox_poll/admin";
+			}
+			else
+			{
+				console.log(data);
+				Swal.fire({
+					icon: 'error',
+					title: 'Oops...',
+					text: data,
+				})
+			}
 		});
 	},
 
@@ -98,6 +98,6 @@ var Poll = {
 
 		id = parseInt(id.replace(/answer_/, "")) + 1;
 
-		$("#answer_fields").append('<input type="text" name="answer_' + id + '" id="answer_' + id + '" placeholder="Answer ' + id + '"/>');
+		$("#answer_fields").append('<input class="form-control mb-3" type="text" name="answer_' + id + '" id="answer_' + id + '" placeholder="Answer ' + id + '"/>');
 	}
 }

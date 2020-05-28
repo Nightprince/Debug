@@ -1,102 +1,224 @@
 var Search = {
-	current: null,
-	isAnimated: false,
 
-	/**
-	 * Get search results
-	 */
-	submit: function()
+    show_data: function()
 	{
-		var results = $("#search_results");
-		var value = $("#search_field").val();
+        var table = $('select[name="table"]').val();
+        var search = $('input[name="search_field"]').val();
 
-		if(value.length > 0)
-		{
-			if(value != Search.current)
-			{
-				Search.current = value;
-
-				results.hide().html('<center><img src="' + Config.image_path + 'ajax.gif" /></center>').fadeIn(200, function()
-				{
-					Search.isAnimated = false;
-
-					$("#search_box").animate({width:"100%",marginTop:0,marginBottom:0}, 300, function()
-					{
-						Search.isAnimated = true;
-					});
-
-					$.post(Config.URL + "armory/search", {search: value, csrf_token_name: Config.CSRF}, function(data)
-					{
-						Search.showSearch(data);
-					});
-				});
-			}
-		}
-		else
-		{
-			UI.alert(lang("cant_be_empty", "armory"));
-		}
+        if (search.length > 2)
+        {
+            if (table == "items")
+            {
+                Search.show_items();
+            }
+            else if (table == "guilds")
+            {
+                Search.show_guilds();
+            }
+            else if (table == "characters")
+            {
+                Search.show_characters();
+            }
+        }
+        else
+        {
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: lang("search_too_short", "armory"),
+            })
+        }
 	},
 
-	showSearch: function(data)
-	{
-		if(!Search.isAnimated)
-		{
-			setTimeout(function(){Search.showSearch(data)}, 20);
-		}
-		else
-		{
-			var results = $("#search_results");
+	show_items: function() {
+        var results = $('#search_box');
+		var realm = $('select[name="realm"]').val();
+		var table = $('select[name="table"]').val();
+		var search = $('input[name="search_field"]').val();
+		$.fn.dataTable.ext.errMode = 'none';
 
-			results.fadeOut(100, function()
-			{
-				results.html(data).fadeIn(100, function()
-				{
-					Tooltip.refresh();
-					Router.initialize();
-				});
-			});
-		}
+        $('#search_results_items')
+        .on( 'error.dt', function ( e, settings, techNote, message ) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: message,
+            })
+        } )
+        .DataTable({
+            "destroy": true,
+            "processing": true,
+            "serverSide": true,
+            "searching": false,
+            "ordering": false,
+            "lengthChange": false,
+            "bAutoWidth": false,
+            "fnDrawCallback": function() {
+                $('#search_results_characters_wrapper, #search_results_guilds, #search_results_characters, #search_results_guilds_wrapper').hide();
+                $('#search_results_items').show();
+                results.show();
+                Tooltip.refresh();
+            },
+            "ajax": {
+                "url": Config.URL + "armory/get_data",
+                "type": "POST",
+                "data": function(d) {
+                    d.realm = realm;
+                    d.table = table;
+                    d.search = search;
+                    d.start = d.start;
+                    d.length = d.length;
+                    d.csrf_token_name = Config.CSRF;
+                }
+            },
+            "columns": [
+                { "data": "name", "render": function(data, type, row, meta) {
+                    return ''+row.icon+'<a href="'+Config.URL +'item/'+row.realm+'/'+row.id+'" class="q'+row.quality+'" data-realm="'+row.realm+'" rel="item='+row.id+'"">'+row.name+'</a>';
+                }},
+                { "data": "level" },
+                { "data": "required" },
+                { "data": "type" }
+            ]
+        });
 	},
 
-	/**
-	 * Change to a tab
-	 * @param Int tab
-	 */
-	showTab: function(tab, element)
-	{
-		$(".search_link").removeClass("nice_active");
-		$(".search_link").removeClass("search_link");
+    show_characters: function() {
+        var results = $('#search_box');
+		var realm = $('select[name="realm"]').val();
+		var table = $('select[name="table"]').val();
+		var search = $('input[name="search_field"]').val();
+		$.fn.dataTable.ext.errMode = 'none';
 
-		$(element).addClass("nice_active");
-		$(element).addClass("search_link");
-
-		$(".search_tab").hide();
-
-		$(".search_realm").addClass("nice_active");
-		$(".search_result_item").show();
-
-		$("#search_tab_" + tab).fadeIn(500);
+        $('#search_results_characters')
+        .on( 'error.dt', function ( e, settings, techNote, message ) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: message,
+            })
+        } )
+        .DataTable({
+            "destroy": true,
+            "processing": true,
+            "serverSide": true,
+            "searching": false,
+            "ordering": false,
+            "lengthChange": false,
+            "bAutoWidth": false,
+            "fnDrawCallback": function() {
+                $('#search_results_items_wrapper, #search_results_guilds, #search_results_items, #search_results_guilds_wrapper').hide();
+                $('#search_results_characters').show();
+                results.show();
+            },
+            "ajax": {
+                "url": Config.URL + "armory/get_data",
+                "type": "POST",
+                "data": function(d) {
+                    d.realm = realm;
+                    d.table = table;
+                    d.search = search;
+                    d.start = d.start;
+                    d.length = d.length;
+                    d.csrf_token_name = Config.CSRF;
+                }
+            },
+            "columns": [
+                { "data": "", "render": function(data, type, row, meta) {
+                    return '<img src="'+Config.URL +'application/images/avatars/'+row.avatar+'.gif" class="char_avatar">';
+                }},
+                { "data": "name", "render": function(data, type, row, meta) {
+                    return '<span class="color-c'+row.class+'">'+row.name+'</span>';
+                }},
+                { "data": "", "render": function(data, type, row, meta) {
+                    return '<span class="faction-'+row.race+'"></span>';
+                }},
+                { "data": "level" },
+                { "data": "", "render": function(data, type, row, meta) {
+                    return '<a href="'+Config.URL +'character/'+row.realm+'/'+row.guid+'" target="_blank">View</a>';
+                }},
+            ]
+        });
 	},
 
-	/**
-	 * Toggle the visiblity of content of a realm
-	 * @param Int realm
-	 * @param Element field
-	 */
-	 toggleRealm: function(realm, field)
-	 {
-	 	var obj = $(field);
-	 	
-	 	if(obj.hasClass("nice_active"))
-	 	{
-	 		obj.removeClass("nice_active");
-	 		$(".search_result_realm_" + realm).hide();
-	 	}
-	 	else
-	 	{
-	 		obj.addClass("nice_active");
-	 		$(".search_result_realm_" + realm).show();
-	 	}
-	 }
+    show_guilds: function() {
+        var results = $('#search_box');
+		var realm = $('select[name="realm"]').val();
+		var table = $('select[name="table"]').val();
+		var search = $('input[name="search_field"]').val();
+		$.fn.dataTable.ext.errMode = 'none';
+
+        $('#search_results_guilds')
+        .on( 'error.dt', function ( e, settings, techNote, message ) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: message,
+            })
+        } )
+        .DataTable({
+            "destroy": true,
+            "processing": true,
+            "serverSide": true,
+            "searching": false,
+            "ordering": false,
+            "lengthChange": false,
+            "bAutoWidth": false,
+            "fnDrawCallback": function() {
+                $('#search_results_items_wrapper, #search_results_characters, #search_results_items, #search_results_characters_wrapper').hide();
+                $('#search_results_guilds').show();
+                results.show();
+            },
+            "ajax": {
+                "url": Config.URL + "armory/get_data",
+                "type": "POST",
+                "data": function(d) {
+                    d.realm = realm;
+                    d.table = table;
+                    d.search = search;
+                    d.start = d.start;
+                    d.length = d.length;
+                    d.csrf_token_name = Config.CSRF;
+                }
+            },
+            "columns": [
+                { "data": "", "render": function(data, type, row, meta) {
+                    return '<a href="'+Config.URL +'guild/'+row.realm+'/'+row.id+'" target="_blank">'+row.name+'</a>';
+                }},
+                { "data": "members" },
+                { "data": "", "render": function(data, type, row, meta) {
+                    return '<a href="'+Config.URL +'character/'+row.realm+'/'+row.ownerGuid+'" target="_blank">'+row.ownerName+'</a>';
+                }},
+            ]
+        });
+	},
+
+	toggle: function()
+	{
+        var table = $('select[name="table"]').val();
+        var search = $('input[name="search_field"]').val();
+
+        if (search.length > 2)
+        {
+            if (table == "items")
+            {
+                Search.show_items();
+            }
+            else if (table == "guilds")
+            {
+                Search.show_guilds();
+            }
+            else if (table == "characters")
+            {
+                Search.show_characters();
+            }
+        }
+        else
+        {
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: lang("search_too_short", "armory"),
+            })
+        }
+	}
 }

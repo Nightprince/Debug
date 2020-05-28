@@ -1,69 +1,113 @@
 <?php
 
+if (!defined('BASEPATH')) {
+    exit('No direct script access allowed');
+}
+
 /**
  * @package FusionCMS
- * @author Jesper Lindström
- * @author Xavier Geerinck
- * @author Elliott Robbins
- * @link https://github.com/Yekta-Core/FusionCMS/
+ * @author  Jesper Lindström
+ * @author  Xavier Geerinck
+ * @author  Elliott Robbins
+ * @author  Keramat Jokar (Nightprince) <https://github.com/Nightprince>
+ * @author  Ehsan Zare (Darksider) <darksider.legend@gmail.com>
+ * @link    https://github.com/FusionWowCMS/FusionCMS
  */
 
 class Logger
 {
-	private $CI;
+    private $CI;
 
-	public function __construct()
-	{
-		//Get the instance of the CI
-		$this->CI = &get_instance();
+    /**
+     * Logs status
+     **/
+    public const STATUS_FAILED  = 'failed';
+    public const STATUS_SUCCEED = 'succeed';
 
-		// Load the logger model
-		$this->CI->load->model('logger_model');
-	}
+    public function __construct()
+    {
+        //Get the instance of the CI
+        $this->CI = &get_instance();
 
-	/**
-	 * Get all the logs by type and limit
-	 * @param null $type
-	 * @param int $limit
-	 * @return mixed
-	 */
-	public function getLogs($type = "", $offset = 0, $limit = 0)
-	{
-		return $this->CI->logger_model->getLogsDb($type, $offset, $limit);
-	}
+        // Load the logger model
+        $this->CI->load->model('logger_model');
+    }
 
-	/**
-	 * Create a new log with the given message and with or without type and modulename,
-	 * will use the current module if not set.
-	 * @param $message
-	 * @param string $type
-	 * @param string $moduleName
-	 */
-	public function createLog($type, $message, $moduleName = "")
-	{
-		// If no module name was given get the current one.
-		if(empty($moduleName))
-		{
-			$moduleName = $this->CI->template->getModuleName();
-		}
+    /**
+     * Get all the logs by type and limit
+     *
+     * @param  null $type
+     * @param  int $limit
+     * @return mixed
+     */
+    public function getLogs($type = "", $offset = 0, $limit = 0)
+    {
+        return $this->CI->logger_model->getLogsDb($type, $offset, $limit);
+    }
 
-		$userId = 0;
+    public function getModLogs()
+    {
+        $modLogs = $this->CI->logger_model->getModLogsDb();
 
-		if($this->CI->user->isOnline())
-		{
-			$userId = $this->CI->user->getId();
-		}
+        //Get Characters name if isAcc = 0
+        for ($i = 0; $i < count((array)$modLogs); $i++) {
+            if ($modLogs[$i]["isAcc"] == false)
+            {
+                $realm = $this->CI->realms->getRealm($modLogs[$i]["realm"]);
+                $characters = $realm->getCharacters();
+                $charId = $modLogs[$i]["affected"];
 
-		// Call our model and add to the db.
-		$this->CI->logger_model->createLogDb($moduleName, $type, $message, $userId, $this->CI->input->ip_address());
-	}
+                $modLogs[$i]["charName"] = $characters->characterExists($charId) ? $characters->getNameByGuid($charId) : "Char doesn't exists";
+            }
+        }
 
-	/**
-	 * Get the number of logs.
-	 * @return mixed
-	 */
-	public function getLogCount()
-	{
-		return $this->CI->logger_model->getLogCount();
-	}
+        return $modLogs;
+    }
+
+    /**
+     * Create a new log with the given data
+     *
+     * @param $message
+     * @param string $event
+     * @param string $message
+     * @param string $status
+     * @param string $custom
+     * @param int $user
+     */
+    public function createLog($type, $event, $message, $custom = [], $status = self::STATUS_SUCCEED, $user = null)
+    {
+        // Module name
+        $module = $this->CI->template->getModuleName();
+
+        if ($this->CI->user->isOnline())
+        {
+            $user = $this->CI->user->getId();
+        }
+
+        // Call our model and add to the db.
+        $this->CI->logger_model->createLogDb($module, $user, $type, $event, $message, $status, json_encode($custom), $this->CI->input->ip_address());
+    }
+
+    public function createModLog($action, $affected, $isAcc, $realmId)
+    {
+        $modId = 0;
+
+        if ($this->CI->user->isOnline())
+        {
+            $modId = $this->CI->user->getId();
+        }
+
+        // Call our model and add to the db.
+        $this->CI->logger_model->createModLogDb($action, $modId, $affected, $this->CI->input->ip_address(), $isAcc, $realmId);
+    }
+
+    /**
+     * Get the number of logs.
+     *
+     * @return mixed
+     */
+    public function getLogCount()
+    {
+        return $this->CI->logger_model->getLogCount();
+    }
 }

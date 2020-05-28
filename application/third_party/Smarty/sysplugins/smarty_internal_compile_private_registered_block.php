@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Smarty Internal Plugin Compile Registered Block
  * Compiles code for the execution of a registered block function
@@ -20,9 +21,9 @@ class Smarty_Internal_Compile_Private_Registered_Block extends Smarty_Internal_C
      * Setup callback, parameter array and nocache mode
      *
      * @param \Smarty_Internal_TemplateCompilerBase $compiler
-     * @param  array                                $_attr attributes
-     * @param  string                               $tag
-     * @param  null                                 $function
+     * @param array                                 $_attr attributes
+     * @param string                                $tag
+     * @param null                                  $function
      *
      * @return array
      */
@@ -61,7 +62,7 @@ class Smarty_Internal_Compile_Private_Registered_Block extends Smarty_Internal_C
             if (is_int($_key)) {
                 $_paramsArray[] = "$_key=>$_value";
             } elseif ($compiler->template->caching && in_array($_key, $tag_info[ 2 ])) {
-                $_value = str_replace("'", "^#^", $_value);
+                $_value = str_replace('\'', "^#^", $_value);
                 $_paramsArray[] = "'$_key'=>^#^.var_export($_value,true).^#^";
             } else {
                 $_paramsArray[] = "'$_key'=>$_value";

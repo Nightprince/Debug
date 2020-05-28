@@ -35,7 +35,7 @@ var Ajax = {
 
 		addRealm: function(form)
 		{
-			UI.confirm('<input type="text" id="realmname_preserve" placeholder="Enter the realmname" autofocus/>', 'Add', function()
+			UI.confirm('<input id="realmname_preserve" class="nui-focus border-muted-300 text-white placeholder:text-muted-300 dark:border-muted-700 dark:bg-muted-900/75 dark:text-muted-200 dark:placeholder:text-muted-500 dark:focus:border-muted-700 peer w-full border bg-white font-sans transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-75 px-2 h-10 py-2 text-sm leading-5 pe-4 ps-4 rounded" placeholder="Enter the realm name" autofocus />', 'Add', function()
 			{
 				var name = $("#realmname_preserve").val();
 				
@@ -205,25 +205,22 @@ var Ajax = {
 				{
 					Ajax.Install.realms(function()
 					{
-						Ajax.Install.ranks(function()
+						$.get("system.php?step=final", function(data)
 						{
-							$.get("system.php?step=final", function(data)
+							if(data != "success")
 							{
-								if(data != "success")
-								{
-									UI.alert('Please delete or rename the "install" folder and then visit <a href="../">your site</a> again.');
-								}
-								else
-								{
-									UI.alert('Installation successful', 500);
+								UI.alert('Please delete or rename the "install" folder and then visit <a href="../">your site</a> again.');
+							}
+							else
+							{
+								UI.alert('Installation successful', 500);
 
-									setTimeout(function()
-									{
-										Memory.clear();
-										window.location = "../";
-									}, 500);
-								}
-							});
+								setTimeout(function()
+								{
+									Memory.clear();
+									window.location = "../";
+								}, 500);
+							}
 						});
 					});
 				});
@@ -243,7 +240,7 @@ var Ajax = {
 				title: $("#title").val(),
 				server_name: $("#server_name").val(),
 				realmlist: $("#realmlist").val(),
-				expansion: $("#expansion").val(),
+				max_expansion: $("#max_expansion").val(),
 				keywords: $("#keywords").val(),
 				description: $("#description").val(),
 				analytics: $("#analytics").val(),
@@ -308,28 +305,6 @@ var Ajax = {
 			}
 
 			$.post("system.php?step=realms", data, function(res)
-			{
-				if(res != '1')
-				{
-					UI.alert("Something went wrong: " + res);
-				}
-				else
-				{
-					Ajax.Install.complete();
-					callback();
-				}
-			});
-		},
-
-		ranks: function(callback)
-		{
-			$("#install").append("Creating ranks...");
-
-			var data = {
-				emulator: $("#emulator").val()
-			}
-
-			$.post("system.php?step=ranks", data, function(res)
 			{
 				if(res != '1')
 				{

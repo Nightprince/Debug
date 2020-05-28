@@ -4,7 +4,7 @@
  * @version 6.X
  * @author Jesper Lindström
  * @author Xavier Geernick
- * @link https://github.com/Yekta-Core/FusionCMS/
+ * @link http://fusion-hub.com
  */
 
 var Settings = {
@@ -19,7 +19,11 @@ var Settings = {
 		{
 			if(Settings.canSubmit)
 			{
-				UI.alert(lang("pw_doesnt_match", "ucp"));
+				Swal.fire({
+					text: lang("pw_doesnt_match", "ucp"),
+					icon: 'error'
+				});
+				
 				Settings.canSubmit = false;
 			}
 		}
@@ -32,7 +36,7 @@ var Settings = {
 			Settings.canSubmit = true;
 
 			// Show that we're loading something
-			$("#settings_ajax").html('<img src="' + Config.image_path + 'ajax.gif" />');
+			$("#settings_ajax").html('<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>');
 
 			// Gather the values
 			var values = {
@@ -44,21 +48,33 @@ var Settings = {
 			// Submit the request
 			$.post(Config.URL + "ucp/settings/submit", values, function(data)
 			{
+				$("#settings_ajax").html('');
+				
 				if(/yes/.test(data))
 				{
-					$("#settings_ajax").html(lang("changes_saved", "ucp"));
+					Swal.fire({
+						text: lang("changes_saved", "ucp"),
+						icon: 'success',
+						willClose: () => {
+							window.location.reload(true);
+						}
+					});
 				}
 				else if(/no/.test(data))
 				{
-					$("#settings_ajax").html('');
-
-					UI.alert(lang("invalid_pw", "ucp"));
+					Swal.fire({
+						text: lang("invalid_pw", "ucp"),
+						icon: 'error'
+					});
 
 					Settings.wrongPassword = $("#old_password").val();
 				}
 				else
 				{
-					$("#settings_ajax").html(data);
+					Swal.fire({
+						text: data,
+						icon: 'error',
+					});
 				}
 			});
 		}
@@ -81,16 +97,22 @@ var Settings = {
 
 		if(value.length < 4 || value.length > 14)
 		{
-			UI.alert(lang("nickname_error"));
+			Swal.fire({
+				text: lang("nickname_error", "ucp"),
+				icon: 'error'
+			});
 		}
-		else if(loc.length > 14)
+		else if(loc.length > 32)
 		{
-			UI.alert(lang("location_error"));
+			Swal.fire({
+				text: lang("location_error", "ucp"),
+				icon: 'error'
+			});
 		}
 		else
 		{
 			// Show that we're loading something
-			$("#settings_info_ajax").html('<img src="' + Config.image_path + 'ajax.gif" />');
+			$("#settings_info_ajax").html('<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>');
 
 			// Submit the request
 			$.post(Config.URL + "ucp/settings/submitInfo",
@@ -102,28 +124,37 @@ var Settings = {
 			},
 			function(data)
 			{
+				$("#settings_info_ajax").html("");
 				if(/1/.test(data))
-				{
-					$("#settings_info_ajax").html(lang("changes_saved", "ucp"));
-
-					if(language)
-					{
-						window.location.reload(true);
-					}
+				{					
+					Swal.fire({
+						text: lang("changes_saved", "ucp"),
+						icon: 'success',
+						willClose: () => {
+							window.location.reload(true);
+						}
+					});
 				}
 				else if(/2/.test(data))
-				{
-					$("#settings_info_ajax").html('');
-					UI.alert(lang("nickname_taken", "ucp"));
+				{					
+					Swal.fire({
+						text: lang("nickname_taken", "ucp"),
+						icon: 'error'
+					});
 				}
 				else if(/3/.test(data))
 				{
-					$("#settings_info_ajax").html('');
-					UI.alert(lang("invalid_language", "ucp"));
+					Swal.fire({
+						text: lang("invalid_language", "ucp"),
+						icon: 'error'
+					});
 				}
 				else
 				{
-					$("#settings_info_ajax").html(data);
+					Swal.fire({
+						text: data,
+						icon: 'error'
+					});
 				}
 			});
 		}

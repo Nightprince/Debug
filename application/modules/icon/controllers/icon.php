@@ -2,150 +2,149 @@
 
 class Icon extends MX_Controller
 {
-	/**
-	 * Get an item's icon display name and cache it
-	 * @param Int $realm
-	 * @param Int $id
-	 * @param Int $isDisplayId
-	 * @return String
-	 */
-	public function get($realm = false, $id = false, $isDisplayId = 0)
-	{		
-		// Check if ID and realm is valid
-		if($id != false && is_numeric($id) && $realm != false)
-		{
-			// It is already a display ID
-			if($isDisplayId == 1)
-			{
-				$icon = $this->getDisplayName($id);
-			}
-			else
-			{
-				$displayId = $this->getDisplayId($id, $realm);
+    /**
+     * Get an item's icon display name and cache it
+     *
+     * @param  Int $realm
+     * @param  Int $item
+     * @return String
+     */
+    public function get($realm = false, $item = false)
+    {
+        // Check if item ID and realm is valid
+        if ($item != false && is_numeric($item) && $realm != false)
+        {
+            // check if item is in cache
+            $item_in_cache = $this->get_icon_cache($item);
 
-				if($displayId != false)
-				{
-					$icon = $this->getDisplayName($displayId);
+            if ($item_in_cache)
+            {
+                $icon = $item_in_cache;
+                die($icon);
+            } else {
+                // check if item is in database
+                $item_in_db = $this->get_icon_db($item);
 
-					if(substr($icon, 0, 3) == pack("CCC", 0xef, 0xbb, 0xbf))
-					{
-						$icon = substr($icon, 3);
-					}
-				}
-				else
-				{
-					$icon = "inv_misc_questionmark";
-				}
-			}
+                if ($item_in_db)
+                {
+                    $icon = $item_in_db;
+                    die($icon);
+                } else {
+                    // check if item is on Wowhead
+                    $item_wowhead = $this->get_icon_wowhead($item);
 
-			die($icon);
-		}
-	}
+                    if ($item_wowhead)
+                    {
+                        $icon = $item_wowhead;
+                        die($icon);
+                    } else {
+                        $icon = "inv_misc_questionmark";
+                        die($icon);
+                    }
+                }
+            }
+        }
+    }
 
-	/**
-	 * Get the display ID of an item
-	 * @param Int $item
-	 * @return Int
-	 */
-	private function getDisplayId($item, $realm)
-	{
-		$realmObj = $this->realms->getRealm($realm);
-		$item = $realmObj->getWorld()->getItem($item);
+    /**
+     * Check if item icon name is in cache
+     *
+     * @param  Int $item
+     * @return String
+     */
+    private function get_icon_cache($item)
+    {
+        $cache = $this->cache->get("items/display_iconname_" . $item);
 
-		return $item['displayid'];
-	}
+        // can we use the cache?
+        if ($cache !== false)
+        {
+            $name = $cache;
+        }
+        else
+        {
+            return false;
+        }
 
-	/**
-	 * Get the display name from the raxezdev display ID API
-	 * @param Int $displayId
-	 * @return String
-	 */
-	private function getDisplayName($displayId)
-	{
-		$cache = $this->cache->get("items/display_".$displayId);
+        return $name;
+    }
 
-		// Can we use the cache?
-		if($cache !== false)
-		{
-			$name = $cache;
-		}
-		else
-		{
-			$retailId = $this->findRetailItem($displayId);
-			
-			if(!$retailId)
-			{
-				$name = "inv_misc_questionmark";
-			}
-			else
-			{
-				$name = $this->getIconName($retailId);
+    /**
+     * Check if item icon name is in database and cache it
+     *
+     * @param  Int $item
+     * @return String
+     */
+    private function get_icon_db($item)
+    {
+        // Get the item ID
+        $query = $this->db->query("SELECT icon FROM item_icons WHERE item_id = ? LIMIT 1", [$item]);
 
-				// In case it wasn't found: show ?-icon
-				if(empty($name))
-				{
-					$name = "inv_misc_questionmark";
-				}
-			}
+        // Check for results
+        if ($query->num_rows() > 0)
+        {
+            $row = $query->result_array();
 
-			// Make sure to cache
-			$this->cache->save("items/display_".$displayId, $name);
-		}
-		
-		return $name;
-	}
+            $name = $row[0]['icon'];
+            
+            // save to cache
+            $this->cache->save("items/display_iconname_" . $item, $name);
+        }
+        else
+        {
+            return false;
+        }
 
-	private function findRetailItem($id)
-	{
-		// Get the item ID
-		$query = $this->db->query("SELECT entry FROM item_display WHERE displayid=? LIMIT 1", array($id));
+        return $name;
+    }
 
-		// Check for results
-		if($query->num_rows() > 0)
-		{
-			$row = $query->result_array();
+    private function get_icon_wowhead($item)
+    {
+        // Get the item XML data
+        $xml = file_get_contents("https://www.wowhead.com/item=" . $item . "&xml");
 
-			return $row[0]['entry'];
-		}
-		else
-		{
-			return false;
-		}
-	}
+        $itemData = $this->xmlToArray($xml);
 
-	private function getIconName($item)
-	{
-		// Get the item XML data
-		$xml = file_get_contents("http://www.wowhead.com/item=".$item."&xml");
+        if (!isset($xml->error) && !isset($itemData['error']))
+        {
+            $icon = $itemData['item']['icon'];
 
-		// In case it wasn't found: show ?-icon
-		if(empty($xml))
-		{
-			$icon = "inv_misc_questionmark";
-		}
-		else
-		{
-			// Convert the data to an array
-			$itemData = $this->xmlToArray($xml);
+            if (!is_array($icon))
+            {
+                // make sure its not in DB already
+                $result = $this->db->query("SELECT COUNT(*) as count FROM item_icons WHERE item_id = ?", [$item])->row();
+                if ($result->count == 0)
+                {
+                    // let the users fill the table themselves, optionally they can import item_template themselves
+                    $query = $this->db->query("INSERT INTO item_icons (item_id, icon) VALUES (?, ?)", [$item, $icon]);
+                }
 
-			// Make sure the icon key is set
-			$icon = (isset($itemData['item']['icon'])) ? strtolower($itemData['item']['icon']) : "inv_misc_questionmark";
-		}
+                // save to cache
+                $this->cache->save("items/display_iconname_" . $item, $icon);
+            }
+            // return false in case of wowhead xml is broken (rare but it happens)
+            else {
+                return false;
+            }
 
-		return $icon;
-	}
+            return $icon;
+        }
 
-	/**
-	 * Convert XML data to an array
-	 * @param String $xml
-	 * @return Array
-	 */
-	private function xmlToArray($xml)
-	{
-		$xml = simplexml_load_string($xml);
-		$json = json_encode($xml);
-		$array = json_decode($json, TRUE);
+        return false;
+    }
 
-		return $array;
-	}
+    /**
+     * Convert XML data to an array
+     *
+     * @param  String $xml
+     * @return Array
+     */
+    private function xmlToArray($xml)
+    {
+        $xml = simplexml_load_string($xml);
+        $json = json_encode($xml);
+        $array = json_decode($json, true);
+
+        return $array;
+    }
 }

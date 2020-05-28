@@ -1,6 +1,8 @@
 <?php
-defined('BASEPATH') OR exit('No direct script access allowed');
 
+if (! defined('BASEPATH')) {
+    exit('No direct script access allowed');
+}
 /*
 | -------------------------------------------------------------------------
 | URI ROUTING
@@ -11,7 +13,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 | and its corresponding controller class/method. The segments in a
 | URL normally follow this pattern:
 |
-|	example.com/class/method/id/
+|   example.com/class/method/id/
 |
 | In some instances, however, you may want to remap this relationship
 | so that a different class/function is called than the one
@@ -19,69 +21,50 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 |
 | Please see the user guide for complete details:
 |
-|	https://codeigniter.com/user_guide/general/routing.html
-|
-| -------------------------------------------------------------------------
-| RESERVED ROUTES
-| -------------------------------------------------------------------------
-|
-| There are three reserved routes:
-|
-|	$route['default_controller'] = 'welcome';
-|
-| This route indicates which controller class should be loaded if the
-| URI contains no data. In the above example, the "welcome" class
-| would be loaded.
-|
-|	$route['404_override'] = 'errors/page_missing';
-|
-| This route will tell the Router which controller/method to use if those
-| provided in the URL cannot be matched to a valid route.
-|
-|	$route['translate_uri_dashes'] = FALSE;
-|
-| This is not exactly a route, but allows you to automatically route
-| controller and method names that contain dashes. '-' isn't a valid
-| class or method name character, so it requires translation.
-| When you set this option to TRUE, it will replace ALL dashes in the
-| controller and method URI segments.
-|
-| Examples:	my-controller/index	-> my_controller/index
-|		my-controller/my-method	-> my_controller/my_method
+|   http://codeigniter.com/user_guide/general/routing.html
 */
+
 // CodeIgniter
 $route['default_controller'] = "news";
 $route['404_override'] = 'errors';
-$route['translate_uri_dashes'] = FALSE;
+
+//Auth
+$route['login'] = 'auth/login';
+$route['logout'] = 'auth/logout';
+//$route['register'] = 'auth/register';
+$route['password_recovery'] = 'auth/password_recovery';
+$route['password_recovery/create_request'] = 'auth/password_recovery/create_request';
+$route['password_recovery/reset_password'] = 'auth/password_recovery/reset_password';
 
 // News
-$route['news/(:num)'] = "News/index/$1";
+$route['news/(:num)'] = "news/index/$1";
 
 // Pages
-$route['page/admin/(:any)'] = "Page/Admin/$1";
-$route['page/admin'] = "Page/Admin/index";
-$route['page/(:any)'] = "Page/index/$1";
+$route['page/admin/(:any)'] = "page/admin/$1";
+$route['page/admin'] = "page/admin/index";
+$route['page/(:any)'] = "page/index/$1";
 
 // Comments
-$route['news/comments/get/(:num)'] = "News/Comments/get/$1";
-$route['news/comments/add/(:num)'] = "News/Comments/add/$1";
+$route['news/comments/get/(:num)'] = "news/comments/get/$1";
+$route['news/comments/add/(:num)'] = "news/comments/add/$1";
 
 // Profile
-$route['profile/(:any)'] = "Profile/index/$1";
-$route['messages/page/(:any)'] = "Messages/index/$1";
-$route['messages/read/(:num)'] = "Messages/Read/index/$1";
-$route['messages/create/(:num)'] = "Messages/Create/index/$1";
+$route['profile/(:num)'] = "profile/index/$1";
 
 // Armory
-$route['character/(:num)/(:any)'] = "Character/index/$1/$2";
-$route['guild/(:num)/(:num)'] = "Guild/index/$1/$2";
-$route['tooltip/(:num)/(:num)'] = "Tooltip/index/$1/$2";
-$route['item/(:num)/(:num)'] = "Item/index/$1/$2";
+$route['character/(:num)'] = "character/index/$1";
+$route['character/(:num)/(:any)'] = "character/index/$1/$2";
+$route['guild/(:num)/(:num)'] = "guild/index/$1/$2";
+$route['tooltip/(:num)/(:num)'] = "tooltip/index/$1/$2";
+$route['item/(:num)/(:num)'] = "item/index/$1/$2";
 
 // Admin
-$route['admin/edit/save/(:any)'] = "Admin/Edit/save/$1";
-$route['admin/edit/saveSource/(:any)'] = "Admin/Edit/saveSource/$1";
-$route['admin/edit/(:any)'] = "Admin/Edit/index/$1";
+$route['admin/edit/save/(:any)'] = "admin/edit/save/$1";
+$route['admin/edit/saveSource/(:any)'] = "admin/edit/saveSource/$1";
+$route['admin/edit/(:any)'] = "admin/edit/index/$1";
 
 // Vote
-$route['vote/callback/(:any)'] = "Vote/Callback/index/$1";
+$route['vote/callback/(:any)'] = "vote/callback/index/$1";
+
+/* End of file routes.php */
+/* Location: ./application/config/routes.php */

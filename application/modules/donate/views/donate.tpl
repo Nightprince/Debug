@@ -1,59 +1,66 @@
-<div id="donate">
-	{if $donate_paypal.use || $donate_paygol.use}
-		<div id="donate_select">
-			{if $donate_paypal.use}<a href="javascript:void(0)" onClick="Donate.showPayPal(this)" class="nice_active nice_button">{lang("paypal", "donate")}</a>{/if}
-			{if $donate_paygol.use}<a href="javascript:void(0)" onClick="Donate.showPayGol(this)" class="{if !$donate_paypal.use}nice_active{/if} nice_button">{lang("paygol", "donate")}</a>{/if}
-		</div>
-
-		<div class="ucp_divider"></div>
-
-		{if $donate_paypal.use}
-		<section id="paypal_area">
-			<form action="https://www{if $donate_paypal.sandbox}.sandbox{/if}.paypal.com/cgi-bin/webscr" method="post" class="page_form">
-				<div class="right_image"><img src="{$url}application/images/misc/paypal_logo.png" /></div>
-				<input type="hidden" name="cmd" value="_xclick" />
-				<input type="hidden" name="business" value="{$donate_paypal.email}" />
-				<input type="hidden" name="item_name" value="{lang("donation_for", "donate")} {$server_name}" />
-				<input type="hidden" name="quantity" value="1" />
-				<input type="hidden" name="currency_code" value="{$currency}" />
-				<input type="hidden" name="notify_url" value="{$donate_paypal.postback_url}" />
-				<input type="hidden" name="return" value="{$donate_paypal.return_url}" />
-				<input type="hidden" name="custom" value="{$user_id}" />
+<div class="container">
+	<div class="row">
+		
+		{$link_active = "donate"}
+		{include file="../../ucp/views/ucp_navigation.tpl"}
+		
+		<div class="col-lg-8 py-lg-5 pb-5 pb-lg-0">
+			<div class="section-header">Donation <span>Panel</span></div>
+			<div class="section-body">
+			
+				{if $use_paypal}
+				<ul class="nav nav-tabs" id="myTab" role="tablist">
+					{if $use_paypal}
+						<li class="nav-item" role="presentation">
+							<button class="nav-link active" id="paypal-tab" data-bs-toggle="tab" data-bs-target="#paypal" type="button" role="tab" aria-controls="paypal" aria-selected="true">
+								{lang("paypal", "donate")}
+							</button>
+						</li>
+					{/if}
+				</ul>
 				
-				{foreach from=$donate_paypal.values item=value key=key}
-					<label for="option_{$key}">
-						<input type="radio" name="amount" value="{$key}" id="option_{$key}" {if reset($donate_paypal.values) == $value}checked="checked"{/if}/> <b>{$value} {lang("dp", "donate")}</b> {lang("for", "donate")} <b>{$currency_sign}{$key}</b>
-					</label>
-				{/foreach}
+				<div class="tab-content">
+					{if $use_paypal}
+						<div class="tab-pane active" id="paypal" role="tabpanel" aria-labelledby="paypal-tab">
+						
+							<div class="row row-cols-xs-1 row-cols-sm-2 row-cols-md-3 my-3 text-center justify-content-center">
+							
+								{foreach from=$paypal.values item=data key=key}
+									<form class="col" action="" method="post">
+										<div class="card mb-4 rounded-3 shadow-sm">
+											<div class="card-header py-3">
+												<h4 class="my-0 fw-normal">{$currency_sign}{$data.price}</h4>
+											</div>
+											
+											<div class="card-body">
+                                                <div class="overlay" id="overlay_{$data.id}">
+                                                    <div class="w-100 d-flex justify-content-center align-items-center">
+                                                        <div class="spinner"></div>
+                                                    </div>
+                                                </div>
+                                                <h1 class="card-title pricing-card-title">{$data.points} </h1>
+                                                <p>{lang("dp", "donate")}</p>
+                                                <input type="hidden" name="donation_type" value="paypal">
+                                                <input type="hidden" name="data_id" value="{$data.id}" id="option_{$data.id}">
+                                                <input type='submit' class="w-100 nice_button" value='{lang("donate", "donate")}' onclick="Donate.disableButton({$data.id})">
+											</div>
+										</div>
+									</form>
+								{/foreach}
+							
+							</div>
+							
+						</div>
+					{/if}
+					
+				</div>
+				{else}
+					<div class="text-center fw-bold py-5">
+						{lang("no_methods", "donate")}
+					</div>
+				{/if}
 
-				<input type='submit' value='{lang("pay_paypal", "donate")}' />
-				<div class="clear"></div>
-			</form>
-		</section>
-		{/if}
-
-		{if $donate_paygol.use}
-		<section id="paygol_area" {if $donate_paypal.use}style="display:none;"{/if}>
-			<form action="http://www.paygol.com/micropayment/paynow_post" method="post" class="page_form">
-				<div class="right_image"><img src="{$url}application/images/misc/paygol_logo.png" /></div>
-				<input type="hidden" name="pg_custom" value="{$user_id}">
-				<input type="hidden" name="pg_serviceid" value="{$donate_paygol.service_id}">
-				<input type="hidden" name="pg_currency" value="{$currency}">
-				<input type="hidden" name="pg_name" value="{lang("donation_for", "donate")} {$server_name}">
-
-				{foreach from=$donate_paygol.values item=value key=key}
-					<label for="option_{$key}">
-						<input type="radio" name="pg_price" value="{$key}" id="option_{$key}" {if reset($donate_paygol.values) == $value}checked="checked"{/if}/> <b>{$value} {lang("dp", "donate")}</b> {lang("for", "donate")} <b>{$currency_sign}{$key}</b>
-					</label>
-				{/foreach}
-				<input type="hidden" name="pg_return_url" value="{$donate_paygol.return_url}">
-				<input type="hidden" name="pg_cancel_url" value="{$donate_paygol.cancel_url}">
-				<input type='submit' value='{lang("pay_paygol", "donate")}' />
-				<div class="clear"></div>
-			</form>
-		</section>
-		{/if}
-	{else}
-		{lang("no_methods", "donate")}
-	{/if}
+			</div>
+		</div>
+	</div>
 </div>

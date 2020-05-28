@@ -1,43 +1,14 @@
 var Accounts = {
+	offset: 0,
+	loadMoreCount: 10,
+    logCount: 0,
+
 	/**
 	 * Links for the ajax requests
 	 */
 	Links: {
 		save: "admin/accounts/save/",
-	},
-	
-	searchAccount: function() 
-	{
-		var value = $("#search_accounts").val();
-		
-		$("#form_accounts_search").html('<center><img src="' + Config.URL + 'application/themes/admin/images/ajax.gif" /><br /><br /></center>');
-
-		$.post(Config.URL + "admin/accounts/search", {value: value, csrf_token_name: Config.CSRF}, function(data)
-		{
-			$("#form_accounts_search").fadeOut(150, function()
-			{
-				$(this).html(data).fadeIn(500, function()
-				{
-					Tooltip.refresh();
-				});
-			});
-		});
-	},
-
-	getAccount: function(id) 
-	{
-		$("#form_accounts_search").html('<center><img src="' + Config.URL + 'application/themes/admin/images/ajax.gif" /><br /><br /></center>');
-
-		$.post(Config.URL + "admin/accounts/search/" + id, {auto: true, csrf_token_name: Config.CSRF}, function(data)
-		{
-			$("#form_accounts_search").fadeOut(150, function()
-			{
-				$(this).html(data).fadeIn(500, function()
-				{
-					Tooltip.refresh();
-				});
-			});
-		});
+		loadMore: "admin/accounts/loadMoreLogs/",
 	},
 	
 	/**
@@ -48,7 +19,7 @@ var Accounts = {
 	{
 		var values = {csrf_token_name: Config.CSRF};
 
-		$(form).find("input, select").each(function()
+		$("input, select", $(form)).each(function()
 		{
 			if($(this).attr("type") != "submit")
 			{
@@ -65,8 +36,24 @@ var Accounts = {
 
 		$.post(Config.URL + this.Links.save + id, values, function(data)
 		{
-			console.log(data);
-			eval(data);
+
+			if(data == "yes")
+			{
+				console.log(data);
+				Swal.fire({
+					icon: "success",
+					title: "The account has been saved!",
+				});
+			}
+			else
+			{
+				console.log(data);
+				Swal.fire({
+					icon: 'error',
+					title: 'Oops...',
+					text: data,
+				})
+			}
 		});
 	},
 
@@ -90,5 +77,100 @@ var Accounts = {
 			arrow.css("-o-transform", "rotate(0deg)");
 			arrow.css("-ms-transform", "rotate(0deg)");
 		}
-	}
+	},
+	
+	loadMore: function(id)
+	{
+
+		this.offset += this.loadMoreCount;
+        this.logCount = $('#js_load_more').val();
+
+        $("#show_more_count").remove();
+
+		$.post(Config.URL + this.Links.loadMore + id, {offset: this.offset, count: this.loadMoreCount, show_more: this.logCount, csrf_token_name: Config.CSRF}, function(data)
+		{
+			$("#overview").append(data);;
+		});
+		$("#show_more_count").append();
+	},
+	
+	removePendingAcc: function(id, element)
+	{
+		Swal.fire({
+			title: 'Do you really want to delete the pending account?',
+			icon: 'warning',
+			showCancelButton: true,
+			confirmButtonColor: '#3085d6',
+			cancelButtonColor: '#d33',
+			confirmButtonText: 'Yes'
+		}).then((result) => {
+		if (result.isConfirmed) {
+			$.get(Config.URL + "admin/accounts/deletePendingAcc/" + id, function(data)
+			{
+				console.log(data);
+				if(data == "yes")
+				{
+					Swal.fire({
+						icon: "success",
+						title: "Pending account deleted!",
+					});
+					
+					$(element).parents("tr").slideUp(300, function()
+					{
+						$(this).remove();
+					});
+				}
+				else
+				{
+					Swal.fire({
+						icon: 'error',
+						title: 'Oops...',
+						text: data,
+					})
+				}
+			});
+		}
+		})
+	},
+	
+	activatePendingAcc: function(id, element)
+	{
+		Swal.fire({
+			title: 'Do you really want to activate the pending account?',
+			icon: 'warning',
+			showCancelButton: true,
+			confirmButtonColor: '#3085d6',
+			cancelButtonColor: '#d33',
+			confirmButtonText: 'Yes'
+		}).then((result) => {
+		if (result.isConfirmed) {
+			$.get(Config.URL + "admin/accounts/activatePendingAcc/" + id, function(data)
+			{
+				console.log(data);
+				if(data == "yes")
+				{
+					console.log(data);
+					Swal.fire({
+						icon: "success",
+						title: "Pending account activated!",
+					});
+					
+					$(element).parents("tr").slideUp(300, function()
+					{
+						$(this).remove();
+					});
+				}
+				else
+				{
+					console.log(data);
+					Swal.fire({
+						icon: 'error',
+						title: 'Oops...',
+						text: data,
+					})
+				}
+			});
+		}
+		})
+	},
 }

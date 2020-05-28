@@ -32,6 +32,7 @@ var Language = (function()
 	 */
 	self.set = function(data)
 	{
+		console.log(data);
 		data = data.replace(/\//, "");
 		items = {};
 		items = JSON.parse(data);

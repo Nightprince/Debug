@@ -15,7 +15,7 @@ var Items = {
 	 */
 	Links: {
 		remove: "store/admin_items/delete/",
-		create: "store/admin_items/create/",
+		create: "store/admin_items/createItem/",
 		createGroup: "store/admin_items/createGroup/",
 		save: "store/admin_items/save/"
 	},
@@ -30,28 +30,50 @@ var Items = {
 		var identifier = this.identifier,
 			removeLink = this.Links.remove;
 
-		UI.confirm("Do you really want to delete this " + identifier + "?", "Yes", function()
-		{
+		Swal.fire({
+			title: 'Do you really want to delete this "' + identifier + '"?',
+			text: "You won't be able to revert this!",
+			icon: 'warning',
+			showCancelButton: true,
+			confirmButtonColor: '#3085d6',
+			cancelButtonColor: '#d33',
+			confirmButtonText: 'Yes, delete it!'
+		}).then((result) => {
+		if (result.isConfirmed) {
 			$("#" + identifier + "_count").html(parseInt($("#" + identifier + "_count").html()) - 1);
 
-			$(element).parents("li").slideUp(300, function()
+			$(element).parents("tr").slideUp(300, function()
 			{
 				$(this).remove();
 			});
 
-			$.get(Config.URL + removeLink + id);
-		});
+			$.get(Config.URL + removeLink + id, function(data)
+			{
+				console.log(data);
+			});
+		}
+		})
 	},
 
 	removeGroup: function(id, element)
 	{
-		UI.confirm("Do you really want to delete this group and all of it's items?", "Yes", function()
-		{
-			$.get(Config.URL + "store/admin_items/deleteGroup/" + id, function()
+		Swal.fire({
+			title: 'Do you really want to delete this group and all of it\'s items?',
+			text: "You won't be able to revert this!",
+			icon: 'warning',
+			showCancelButton: true,
+			confirmButtonColor: '#3085d6',
+			cancelButtonColor: '#d33',
+			confirmButtonText: 'Yes, delete it!'
+		}).then((result) => {
+		if (result.isConfirmed) {
+			$.get(Config.URL + "store/admin_items/deleteGroup/" + id, function(data)
 			{
+				console.log(data);
 				window.location.reload(true);
 			});
-		});
+		}
+		})
 	},
 
 	/**
@@ -124,8 +146,19 @@ var Items = {
 
 		$.post(Config.URL + ((isGroup)?this.Links.createGroup:this.Links.create), values, function(data)
 		{
-			console.log(data);
-			eval(data);
+			if(data == "yes")
+			{
+				window.location = Config.URL + "store/admin_items";
+			}
+			else
+			{
+				console.log(data);
+				Swal.fire({
+					icon: 'error',
+					title: 'Oops...',
+					text: data,
+				})
+			}
 		});
 	},
 
@@ -156,8 +189,19 @@ var Items = {
 
 		$.post(Config.URL + this.Links.save + id, values, function(data)
 		{
-			console.log(data);
-			eval(data);
+			if(data == "yes")
+			{
+				window.location = Config.URL + "store/admin_items";
+			}
+			else
+			{
+				console.log(data);
+				Swal.fire({
+					icon: 'error',
+					title: 'Oops...',
+					text: data,
+				})
+			}
 		});
 	},
 
@@ -191,29 +235,34 @@ var Items = {
 		});
 	},
 
-	editGroup: function(id, field)
+	editGroup: function(id)
 	{
-		var nameField = $(field).parents("div").siblings(".group_title");
-		var orderField = $(field).parents("div").siblings(".group_order").find(".group_order_number");
+		var data = {
+			title:$("#title").val(),
+			order:$("#order").val(),
+			csrf_token_name: Config.CSRF
+		};
 
-		var renameHTML = "<input placeholder='Title' type='text' id='rename'><br/><input value='"+orderField.html()+"' placeholder='Number to order' type='text' id='order'>";
-
-		UI.confirm(renameHTML, "Save", function()
+		$.post(Config.URL + "store/admin_items/saveGroup/" + id, data, function(response)
 		{
-			var name = $("#rename").val();
-			var number = $("#order").val();
-
-			nameField.html(name);
-			orderField.html(number);
-
-			$.post(Config.URL + "store/admin_items/saveGroup/" + id, {csrf_token_name:Config.CSRF, title:name, order:number}, function()
+			if(response == "yes")
 			{
-				console.log("EXECUTED");
-				//window.location.reload(true);
-			});
+				console.log(data);
+				Swal.fire({
+					icon: "success",
+					title: "Group has been changed!",
+				});
+			}
+			else
+			{
+				console.log(data);
+				Swal.fire({
+					icon: 'error',
+					title: 'Oops...',
+					text: response,
+				})
+			}
 		});
-
-		$("#rename").val(nameField.html());
 	},
 
 	formType: "item",

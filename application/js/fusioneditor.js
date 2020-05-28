@@ -3,7 +3,7 @@
  * @version 6.X
  * @author Jesper Lindström
  * @author Xavier Geernick
- * @link https://github.com/Yekta-Core/FusionCMS/
+ * @link http://fusion-hub.com
  */
 
 var FusionEditor = {

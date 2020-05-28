@@ -30,40 +30,30 @@ var Slider = {
 		var identifier = this.identifier,
 			removeLink = this.Links.remove;
 
-		UI.confirm("Do you really want to delete this " + identifier + "?", "Yes", function()
-		{
+		Swal.fire({
+			title: 'Do you really want to delete this ' + identifier + '?',
+			text: "You won't be able to revert this!",
+			icon: 'warning',
+			showCancelButton: true,
+			confirmButtonColor: '#3085d6',
+			cancelButtonColor: '#d33',
+			confirmButtonText: 'Yes, delete it!'
+		}).then((result) => {
+		if (result.isConfirmed) {
 			$("#" + identifier + "_count").html(parseInt($("#" + identifier + "_count").html()) - 1);
 
-			$(element).parents("li").slideUp(300, function()
+			$(element).parents("tr").slideUp(300, function()
 			{
 				$(this).remove();
 			});
 
-			$.get(Config.URL + removeLink + id);
-		});
-	},
-
-	/**
-	 * Toggle between the "add" form and the list
-	 */
-	add: function()
-	{
-		var id = this.identifier;
-
-		if($("#add_" + id).is(":visible"))
-		{
-			$("#add_" + id).fadeOut(150, function()
+			$.get(Config.URL + removeLink + id, function(data)
 			{
-				$("#main_" + id).fadeIn(150);
+				console.log(data);
 			});
 		}
-		else
-		{
-			$("#main_" + id).fadeOut(150, function()
-			{
-				$("#add_" + id).fadeIn(150);
-			});
-		}
+		})
+
 	},
 
 	/**
@@ -89,8 +79,19 @@ var Slider = {
 
 		$.post(Config.URL + this.Links.create, values, function(data)
 		{
-			console.log(data);
-			eval(data);
+			if(data == "yes")
+			{
+				window.location = Config.URL + "admin/slider";
+			}
+			else
+			{
+				console.log(data);
+				Swal.fire({
+					icon: 'error',
+					title: 'Oops...',
+					text: data,
+				})
+			}
 		});
 	},
 
@@ -118,7 +119,6 @@ var Slider = {
 		$.post(Config.URL + this.Links.save + id, values, function(data)
 		{
 			console.log(data);
-			eval(data);
 		});
 	},
 
@@ -130,8 +130,8 @@ var Slider = {
 	 */
 	move: function(direction, id, element)
 	{
-		var row = $(element).parents("li");
-		var targetRow = (direction == "up") ? row.prev("li") : row.next("li");
+		var row = $(element).parents("tr");
+		var targetRow = (direction == "up") ? row.prev("tr") : row.next("tr");
 
 		if(targetRow.length)
 		{
@@ -160,22 +160,33 @@ var Slider = {
 	 * ----------- Module specific code -----------
 	 */
 
-	saveSettings: function(form)
+	saveSettings: function()
 	{
-		var values = {csrf_token_name: Config.CSRF};
-
-		$(form).find("input, select").each(function()
-		{
-			if($(this).attr("type") != "submit")
-			{
-				values[$(this).attr("name")] = $(this).val();
-			}
-		});
+		var values = {
+			show_slider:$("#show_slider").val(),
+			slider_interval:$("#slider_interval").val(),
+			slider_style:$("#slider_style").val(),
+			csrf_token_name: Config.CSRF
+		};
 
 		$.post(Config.URL + "admin/slider/saveSettings", values, function(data)
 		{
-			console.log(data);
-			eval(data);
+			console.log(values);
+			if(data == "yes")
+			{
+				Swal.fire({
+					icon: "success",
+					title: "Slider settings have been saved!",
+				});
+			}
+			else
+			{
+				Swal.fire({
+					icon: 'error',
+					title: 'Oops...',
+					text: data,
+				})
+			}
 		});
 	}
 }

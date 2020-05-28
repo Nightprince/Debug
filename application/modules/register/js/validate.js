@@ -43,7 +43,7 @@ var Validate = {
 	{
 		var field = $(field.replace("register_", "") + "_error");
 		
-		field.html('<img src="' + Config.image_path + 'ajax_small.gif" />');
+		field.html('<div class="lds-ring"><div></div><div></div><div></div><div></div></div>');
 		
 	},
 
@@ -57,7 +57,7 @@ var Validate = {
 			value = field.val();
 
 		// Length check
-		if(value.length < 4 || value.length > 32)
+		if(value.length < 4 || value.length > 24)
 		{
 			this.invalid(field_name, lang("username_limit_length", "register"));
 		}

@@ -1,9 +1,7 @@
-.online_realm {
-	display:none;
+.accordion-button{
+  display:block;
 }
 
-.online input[type="submit"]
-{
-	margin-top:0px;
-	cursor:pointer;
+.nice_table tbody tr td {
+    font-weight: initial !important;
 }

@@ -4,7 +4,7 @@
 	setTimeout(function()
 	{
 		window.location.reload(true);
-	}, 1000);
+	}, 10000);
 </script>
 
 {if $type == "offline"}

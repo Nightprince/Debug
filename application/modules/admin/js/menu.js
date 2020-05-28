@@ -30,17 +30,29 @@ var Menu = {
 		var identifier = this.identifier,
 			removeLink = this.Links.remove;
 
-		UI.confirm("Do you really want to delete this " + identifier + "?", "Yes", function()
-		{
+		Swal.fire({
+			title: 'Do you really want to delete this link?',
+			text: "You won't be able to revert this!",
+			icon: 'warning',
+			showCancelButton: true,
+			confirmButtonColor: '#3085d6',
+			cancelButtonColor: '#d33',
+			confirmButtonText: 'Yes, delete it!'
+		}).then((result) => {
+		if (result.isConfirmed) {
 			$("#" + identifier + "_count").html(parseInt($("#" + identifier + "_count").html()) - 1);
 
-			$(element).parents("li").slideUp(300, function()
+			$(element).parents("tr").slideUp(300, function()
 			{
 				$(this).remove();
 			});
 
-			$.get(Config.URL + removeLink + id);
-		});
+			$.get(Config.URL + removeLink + id, function(data)
+			{
+				console.log(data);
+			});
+		}
+		})
 	},
 
 	/**
@@ -50,19 +62,15 @@ var Menu = {
 	{
 		var id = this.identifier;
 
-		if($("#add_" + id).is(":visible"))
+		if ($("#add_link").css('display') == 'none')
 		{
-			$("#add_" + id).fadeOut(150, function()
-			{
-				$("#main_" + id).fadeIn(150);
-			});
+			var div = document.getElementById('add_link');
+			div.style.display = 'block';
 		}
 		else
 		{
-			$("#main_" + id).fadeOut(150, function()
-			{
-				$("#add_" + id).fadeIn(150);
-			});
+			var div = document.getElementById('add_link');
+			div.style.display = 'none';
 		}
 	},
 
@@ -90,7 +98,24 @@ var Menu = {
 		$.post(Config.URL + this.Links.create, values, function(data)
 		{
 			console.log(data);
-			eval(data);
+			if(data == "yes")
+			{
+				console.log(data);
+				Swal.fire({
+					icon: "success",
+					title: "New link has been saved!",
+				});
+				window.location = Config.URL + "admin/menu";
+			}
+			else
+			{
+				console.log(data);
+				Swal.fire({
+					icon: 'error',
+					title: 'Oops...',
+					text: data,
+				})
+			}
 		});
 	},
 
@@ -102,7 +127,7 @@ var Menu = {
 	{
 		var values = {csrf_token_name: Config.CSRF};
 
-		$(form).find("input, select").each(function()
+		$(form).find("input, select, label").each(function()
 		{
 			if($(this).attr("type") != "submit")
 			{
@@ -117,8 +142,18 @@ var Menu = {
 
 		$.post(Config.URL + this.Links.save + id, values, function(data)
 		{
-			console.log(data);
-			eval(data);
+			if(data == "yes")
+			{
+				window.location = Config.URL + "admin/menu";
+			}
+			else
+			{
+				Swal.fire({
+				icon: 'error',
+				title: 'Oops...',
+				text: data,
+				})
+			}
 		});
 	},
 
@@ -130,8 +165,8 @@ var Menu = {
 	 */
 	move: function(direction, id, element)
 	{
-		var row = $(element).parents("li");
-		var targetRow = (direction == "up") ? row.prev("li") : row.next("li");
+		var row = $(element).parents("tr");
+		var targetRow = (direction == "up") ? row.prev("tr") : row.next("tr");
 
 		if(targetRow.length)
 		{
@@ -161,23 +196,29 @@ var Menu = {
 	 */
 	selectCustom: function()
 	{
-		var rows = $('<div style="text-align:left;" id="custom_pages"></div>');
+		var rows = $('<div class="" id="custom_pages"></div>');
+		console.log(rows);
 
 		for(i in customPages)
 		{
-			rows.append("<input type='radio' id='page_" + i + "' value='" + i + "'/> <label for='page_" + i + "' style='display:inline;border:none;font-size:14px;'>" + customPages[i].name + "</label><br />");
+		rows.append("<input class='form-check-input' type='checkbox' id='page_" + i + "' value='" + i + "'> <label for='page_" + i + "' style='margin-top: 0.15em;'>" + customPages[i].name + "</label><br>");
 		}
 
-		UI.confirm(rows, "Select", function()
-		{
-			$("#custom_pages").children("input[type='radio']").each(function()
+		Swal.fire({
+			title: 'Select',
+			html: rows,
+			showCancelButton: true,
+		}).then((result) => {
+		if (result.isConfirmed) {
+			$("#custom_pages").children("input[type='checkbox']").each(function()
 			{
 				if(this.checked)
 				{
 					$("#link").val("page/" + customPages[this.value].identifier);
 				}
 			});
-		});
+		}
+		})
 	},
 
 	toggleRank: function(field)

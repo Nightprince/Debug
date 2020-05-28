@@ -3,12 +3,12 @@
  * @version 6.X
  * @author Jesper Lindström
  * @author Xavier Geernick
- * @link https://github.com/Yekta-Core/FusionCMS/
+ * @link http://fusion-hub.com
  */
 
 function Ajax()
 {
-	this.loaderHTML = '<div style="padding:10px;text-align:center;"><img src="' + Config.image_path + 'ajax.gif" /></div>';
+	this.loaderHTML = '<div style="padding:10px;text-align:center;"><div class="lds-ring"><div></div></div>';
 	this.commentCount = 0;
 
 	/**
@@ -24,11 +24,11 @@ function Ajax()
 		{
 			if(element.is(":visible"))
 			{
-				element.slideUp(300);
+				element.slideUp(500);
 			}
 			else
 			{
-				element.fadeIn(300);
+				element.slideDown(500);
 			}
 		}
 		else
@@ -103,7 +103,7 @@ function Ajax()
 	{
 		$(field).parent().parent().slideUp(function()
 		{
-			$(this).remove();
+			$("#" + id).remove();
 		});
 		
 		$.get(Config.URL + "news/comments/delete/" + id, function(data)

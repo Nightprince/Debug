@@ -1,6 +1,5 @@
 <section class="box big" id="main_roles">
 	<h2>
-		<img src="{$url}application/themes/admin/images/icons/black16x16/ic_lock.png"/>
 		Roles
 	</h2>
 
@@ -49,10 +48,10 @@
 						</li>
 					{/foreach}
 				{/if}
-				
+
 				{if $module.manifest}
 					{foreach from=$module.manifest key=roleName item=role}
-						<li>
+						<li class="role-item">
 							<table width="100%">
 								<tr>
 									<td width="30%"><b>{$roleName}</b></td>
@@ -64,7 +63,7 @@
 								</tr>
 							</table>
 						</li>
-						<li class="expanded">
+						<li class="role-item-content">
 							<div class="description">{$role.description}</div>
 							{foreach from=$role.permissions key=name item=value}
 								<div class="permission">
@@ -79,6 +78,25 @@
 		{/foreach}
 	</ul>
 </section>
+
+<script>
+	$(".role-item").hover(
+			function () {
+				$(this).next().addClass("expanded");
+			}, function () {
+				$(this).next().removeClass("expanded");
+			}
+	);
+
+	$(".role-item-content").hover(
+			function () {
+				$(this).addClass("expanded");
+			}, function () {
+				$(this).removeClass("expanded");
+			}
+	);
+
+</script>
 
 <!-- later...
 <section class="box big" id="add_roles" style="display:none;">

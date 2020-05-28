@@ -2,180 +2,184 @@
 
 class Admin extends MX_Controller
 {
-	public function __construct()
-	{
-		// Make sure to load the administrator library!
-		$this->load->library('Administrator');
-		$this->load->helper('tinymce_helper');
-		$this->load->model('page_model');
+    public function __construct()
+    {
+        // Make sure to load the administrator library!
+        $this->load->library('administrator');
+        $this->load->helper('tinymce_helper');
+        $this->load->model('page_model');
 
-		requirePermission("canViewAdmin");
+        requirePermission("canViewAdmin");
 
-		parent::__construct();
-	}
+        parent::__construct();
+    }
 
-	public function index()
-	{
-		// Change the title
-		$this->administrator->setTitle("Pages");
+    public function index()
+    {
+        // Change the title
+        $this->administrator->setTitle("Pages");
 
-		$pages = $this->page_model->getPages(true);
+        $pages = $this->page_model->getPages(true);
 
-		if($pages)
-		{
-			foreach($pages as $key => $value)
-			{
-				$pages[$key]['name'] = langColumn($pages[$key]['name']);
+        if ($pages) {
+            foreach ($pages as $key => $value) {
+                $pages[$key]['name'] = langColumn($pages[$key]['name']);
 
-				if(strlen($pages[$key]['name']) > 20)
-				{
-					$pages[$key]['name'] = mb_substr($pages[$key]['name'], 0, 20) . '...';
-				}
-			}
-		}
+                if (strlen($pages[$key]['name']) > 20) {
+                    $pages[$key]['name'] = mb_substr($pages[$key]['name'], 0, 20) . '...';
+                }
+            }
+        }
 
-		// Prepare my data
-		$data = array(
-			'url' => $this->template->page_url,
-			'pages' => $pages
-		);
+        // Prepare my data
+        $data = array(
+            'url' => $this->template->page_url,
+            'pages' => $pages
+        );
 
-		// Load my view
-		$output = $this->template->loadPage("admin.tpl", $data);
+        // Load my view
+        $output = $this->template->loadPage("admin.tpl", $data);
 
-		// Put my view in the main box with a headline
-		$content = $this->administrator->box('Custom pages', $output);
+        // Put my view in the main box with a headline
+        $content = $this->administrator->box('Custom pages', $output);
 
-		// Output my content. The method accepts the same arguments as template->view
-		$this->administrator->view($content, false, "modules/page/js/admin.js");
-	}
+        // Output my content. The method accepts the same arguments as template->view
+        $this->administrator->view($content, false, "modules/page/js/admin.js");
+    }
 
-	public function edit($id = false)
-	{
-		requirePermission("canEdit");
+    public function new()
+    {
+        requirePermission("canAdd");
 
-		if(!$id || !is_numeric($id))
-		{
-			die();
-		}
+        // Change the title
+        $this->administrator->setTitle('Page - New');
 
-		$page = $this->page_model->getPage($id);
+        // Prepare my data
+        $data = array(
+            'url' => $this->template->page_url,
+        );
 
-		if($page == false)
-		{
-			show_error("There is no page with ID ".$id);
+        // Load my view
+        $output = $this->template->loadPage("admin_new.tpl", $data);
 
-			die();
-		}
+        // Put my view in the main box with a headline
+        $content = $this->administrator->box('New Page', $output);
 
-		// Change the title
-		$this->administrator->setTitle(langColumn($page['name']));
+        // Output my content. The method accepts the same arguments as template->view
+        $this->administrator->view($content, false, "modules/page/js/admin.js");
+    }
 
-		// Prepare my data
-		$data = array(
-			'url' => $this->template->page_url,
-			'page' => $page
-		);
+    public function edit($id = false)
+    {
+        requirePermission("canEdit");
 
-		// Load my view
-		$output = $this->template->loadPage("admin_edit.tpl", $data);
+        if (!$id || !is_numeric($id)) {
+            die();
+        }
 
-		// Put my view in the main box with a headline
-		$content = $this->administrator->box('<a href="'.$this->template->page_url.'page/admin">Custom pages</a> &rarr; '.langColumn($page['name']), $output);
+        $page = $this->page_model->getPage($id);
 
-		// Output my content. The method accepts the same arguments as template->view
-		$this->administrator->view($content, false, "modules/page/js/admin.js");
-	}
+        if ($page == false) {
+            show_error("There is no page with ID " . $id);
 
-	public function delete($id = false)
-	{
-		requirePermission("canRemove");
+            die();
+        }
 
-		if(!$id)
-		{
-			die();
-		}
-		
-		$this->cache->delete('page_*.cache');
-		$this->page_model->delete($id);
+        // Change the title
+        $this->administrator->setTitle(langColumn($page['name']));
 
-		// Add log
-		$this->logger->createLog('Deleted page', $id);
+        // Prepare my data
+        $data = array(
+            'url' => $this->template->page_url,
+            'page' => $page
+        );
 
-		$this->plugins->onDelete($id);
-	}
+        // Load my view
+        $output = $this->template->loadPage("admin_edit.tpl", $data);
 
-	public function create($id = false)
-	{
-		requirePermission("canAdd");
+        // Put my view in the main box with a headline
+        $content = $this->administrator->box('' . langColumn($page['name']), $output);
 
-		$headline = $this->input->post('name');
-		$identifier = $this->input->post('identifier');
-		$content = $this->input->post('content');
+        // Output my content. The method accepts the same arguments as template->view
+        $this->administrator->view($content, false, "modules/page/js/admin.js");
+    }
 
-		if(strlen($headline) > 70 || empty($headline))
-		{
-			die("The headline must be between 1-70 characters long");
-		}
+    public function delete($id = false)
+    {
+        requirePermission("canRemove");
 
-		if(empty($content))
-		{
-			die("Content can't be empty");
-		}
+        if (!$id) {
+            die();
+        }
 
-		if(empty($identifier) || !preg_match("/^[A-Za-z0-9]*$/", $identifier))
-		{
-			die("Identifier can't be empty and may only contain numbers and letters");
-		}
+        $this->cache->delete('page_*.cache');
+        $this->page_model->delete($id);
 
-		$identifier = strtolower($identifier);
+        // Add log
+		$this->logger->createLog("admin", "delete", "Deleted page", ['ID' => $id]);
 
-		if($identifier == "admin")
-		{
-			die("The identifier <b>admin</b> is reserved by the system");
-		}
+        $this->plugins->onDelete($id);
+    }
 
-		if($this->page_model->pageExists($identifier, $id))
-		{
-			die("The identifier is already in use");
-		}
+    public function create($id = false)
+    {
+        requirePermission("canAdd");
 
-		if($id)
-		{
-			$this->page_model->update($id, $headline, $identifier, $content);
-			$this->cache->delete('page_*.cache');
+        $headline = $this->input->post('name');
+        $identifier = $this->input->post('identifier');
+        $content = $this->input->post('content', false);
 
-			$hasPermission = $this->page_model->hasPermission($id);
+        if (strlen($headline) > 70 || strlen($headline) < 15 || empty($headline)) {
+            die("The headline must be between 1-70 characters long");
+        }
 
-			if($this->input->post('visibility') == "group" && !$hasPermission)
-			{
-				$this->page_model->setPermission($id);
-			}
-			elseif($this->input->post('visibility') != "group" && $hasPermission)
-			{
-				$this->page_model->deletePermission($id);
-			}
+        if (empty($content)) {
+            die("Content can't be empty");
+        }
 
-			// Add log
-			$this->logger->createLog('Edited page', $identifier);
+        if (empty($identifier) || !preg_match("/^[A-Za-z0-9]*$/", $identifier)) {
+            die("Identifier can't be empty and may only contain numbers and letters");
+        }
 
-			$this->plugins->onUpdate($id, $headline, $identifier, $content);
-		}
-		else
-		{
-			$id = $this->page_model->create($headline, $identifier, $content);
+        $identifier = strtolower($identifier);
 
-			if($this->input->post('visibility') == "group")
-			{
-				$this->page_model->setPermission($id);
-			}
+        if ($identifier == "admin") {
+            die("The identifier <b>admin</b> is reserved by the system");
+        }
 
-			// Add log
-			$this->logger->createLog('Added page', $identifier);
+        if ($this->page_model->pageExists($identifier, $id)) {
+            die("The identifier is already in use");
+        }
 
-			$this->plugins->onCreate($id, $headline, $identifier, $content);
-		}
+        if ($id) {
+            $this->page_model->update($id, $headline, $identifier, $content);
+            $this->cache->delete('page_*.cache');
 
-		die("yes");
-	}
+            $hasPermission = $this->page_model->hasPermission($id);
+
+            if ($this->input->post('visibility') == "group" && !$hasPermission) {
+                $this->page_model->setPermission($id);
+            } elseif ($this->input->post('visibility') != "group" && $hasPermission) {
+                $this->page_model->deletePermission($id);
+            }
+
+            // Add log
+            $this->logger->createLog("admin", "edit", "Edited page", ['ID' => $id, 'Page' => $headline]);
+
+            $this->plugins->onUpdate($id, $headline, $identifier, $content);
+        } else {
+            $id = $this->page_model->create($headline, $identifier, $content);
+
+            if ($this->input->post('visibility') == "group") {
+                $this->page_model->setPermission($id);
+            }
+
+            // Add log
+            $this->logger->createLog("admin", "add", "Added page", ['ID' => $id, 'Page' => $headline]);
+
+            $this->plugins->onCreate($id, $headline, $identifier, $content);
+        }
+
+        die("yes");
+    }
 }

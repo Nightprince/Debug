@@ -1,281 +1,123 @@
-<section class="box big" id="main_item">
-	<h2>
-		<img src="{$url}application/themes/admin/images/icons/black16x16/ic_tag.png"/>
-		Items (<div style="display:inline;" id="item_count">{if !$items}0{else}{count($items)}{/if}</div>)
-	</h2>
-
-	{if hasPermission("canAddItems") || hasPermission("canAddGroups")}
-	<span>
-		{if hasPermission("canAddItems")}
-			<a class="nice_button" href="javascript:void(0)" onClick="Items.add()">Create item</a>&nbsp;
-		{/if}
-
-		{if hasPermission("canAddGroups")}
-			<a class="nice_button" href="javascript:void(0)" onClick="Items.addGroup()">Create group</a>
-		{/if}
-	</span>
-	{/if}
-
-	<ul id="item_list">
-		{if $items}
-		{foreach from=$items item=item}
-			<li>
-				<table width="100%">
-					<tr>
-						<td width="5%"><img style="opacity:1;" src="https://wow.zamimg.com/images/wow/icons/small/{$item.icon}.jpg" /></td>
-						<td width="30%" data-tip="{$item.description}"><b class="q{$item.quality}">{character_limiter($item.name, 20)}</b></td>
-						<td width="20%" {if array_key_exists("title", $item) && $item.title}class="item_group"{/if}>
-							{if array_key_exists("title", $item) && array_key_exists("orderNumber", $item) && $item.title}
-								<div class="group_actions" style="display:none;">
-									{if hasPermission("canEditGroups")}
-									<a href="javascript:void(0)" onClick="Items.editGroup({$item.group}, this)" data-tip="Edit group"><img src="{$url}application/themes/admin/images/icons/black16x16/ic_edit.png" /></a>&nbsp;
-									{/if}
-
-									{if hasPermission("canRemoveGroups")}
-									<a href="javascript:void(0)" onClick="Items.removeGroup({$item.group}, this, true)" data-tip="Delete group and all of it's items">
-										<img src="{$url}application/themes/admin/images/icons/black16x16/ic_minus.png" />
-									</a>
-									{/if}
-								</div>
-								<div class="group_title" style="float: left;">{$item.title}</div>
-								<div class="group_order" style="float: right; display: block; margin-right: 10px;">Nr: <abbr class="group_order_number" style="padding: 0px;">{$item.orderNumber}</abbr></div>
-							{/if}
-						</td>
-						<td width="30%">
-							{if $item.vp_price}
-								<img src="{$url}application/images/icons/lightning.png" style="opacity:1;margin-top:3px;position:absolute;" /> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{$item.vp_price} VP
-							{/if}
-							{if $item.dp_price}
-								<img src="{$url}application/images/icons/coins.png" style="opacity:1;margin-top:3px;position:absolute;"/> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-								{$item.dp_price} DP
-							{/if}
-						</td>
-						<td style="text-align:right;">
-							{if hasPermission("canEditItems")}
-								<a href="{$url}store/admin_items/edit/{$item.id}" data-tip="Edit"><img src="{$url}application/themes/admin/images/icons/black16x16/ic_edit.png" /></a>&nbsp;
-							{/if}
-
-							{if hasPermission("canRemoveItems")}
-								<a href="javascript:void(0)" onClick="Items.remove({$item.id}, this)" data-tip="Delete"><img src="{$url}application/themes/admin/images/icons/black16x16/ic_minus.png" /></a>
-							{/if}
-						</td>
-					</tr>
-				</table>
-			</li>
-		{/foreach}
-		{/if}
+<div class="row">
+<div class="tabs">
+	<ul class="nav nav-tabs mb-2">
+		<li class="nav-item">
+			<a class="relative font-sans font-normal text-sm inline-flex items-center justify-center leading-5 no-underline h-8 px-3 py-2 space-x-1 border nui-focus transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed hover:enabled:shadow-none text-muted-700 border-muted-300 dark:text-white dark:bg-muted-700 dark:border-muted-600 dark:hover:enabled:bg-muted-600 hover:enabled:bg-muted-50 dark:active:enabled:bg-muted-700/70 active:enabled:bg-muted-100 rounded-xl active" href="#items" data-bs-target="#items" data-bs-toggle="tab">Items</a>
+		</li>
+		<li class="nav-item">
+			<a class="relative font-sans font-normal text-sm inline-flex items-center justify-center leading-5 no-underline h-8 px-3 py-2 space-x-1 border nui-focus transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed hover:enabled:shadow-none text-muted-700 border-muted-300 dark:text-white dark:bg-muted-700 dark:border-muted-600 dark:hover:enabled:bg-muted-600 hover:enabled:bg-muted-50 dark:active:enabled:bg-muted-700/70 active:enabled:bg-muted-100 rounded-xl mx-2" href="#groups" data-bs-target="#groups" data-bs-toggle="tab">Groups</a>
+		</li>
 	</ul>
-</section>
+	<div class="tab-content border-muted-200 dark:border-muted-700 dark:bg-muted-800 relative w-full border bg-white transition-all duration-300 rounded-xl p-6">
+		<div class="tab-pane active" id="items">
+			<div class="btn-toolbar justify-content-between">
+				<div class="input-group group/nui-input relative">
+					<input type="text" id="ItemSeachInput" class="form-control nui-focus border-muted-300 text-muted-600 placeholder:text-muted-300 dark:border-muted-700 dark:bg-muted-900/75 dark:text-muted-200 dark:placeholder:text-muted-500 dark:focus:border-muted-700 peer w-full border bg-white font-sans transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-75 px-2 h-10 py-2 text-sm leading-5 pe-4 ps-9 rounded-xl pe-24 !bg-muted-100 dark:!bg-muted-700 focus:!bg-white dark:focus:!bg-muted-900" placeholder="Search">
+					<div class="text-muted-400 group-focus-within/nui-input:text-primary-500 absolute start-0 top-0 flex items-center justify-center transition-colors duration-300 peer-disabled:cursor-not-allowed peer-disabled:opacity-75 h-10 w-10">
+						<svg data-v-cd102a71="" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="icon h-[1.15rem] w-[1.15rem]" width="1em" height="1em" viewBox="0 0 24 24">
+							<g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+								<circle cx="11" cy="11" r="8"></circle>
+								<path d="m21 21l-4.35-4.35"></path>
+							</g>
+						</svg>
+					</div>
+				</div>
+				{if hasPermission("canAddItems")}
+					<span class="pull-right">
+						<a class="relative font-sans font-normal text-sm inline-flex items-center justify-center leading-5 no-underline h-8 px-3 py-2 space-x-1 border nui-focus transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed hover:enabled:shadow-none text-muted-700 border-muted-300 dark:text-white dark:bg-muted-700 dark:border-muted-600 dark:hover:enabled:bg-muted-600 hover:enabled:bg-muted-50 dark:active:enabled:bg-muted-700/70 active:enabled:bg-muted-100 rounded-md" href="{$url}store/admin_items/add_item">Create item</a>
+					</span>
+				{/if}
+			</div>
 
-<section class="box big" id="add_item" style="display:none;">
-	<h2><a href='javascript:void(0)' onClick="Items.add()" data-tip="Return to items">Items</a> &rarr; New item</h2>
-
-	<form>
-		<label for="item_type">Item type</label>
-		<select id="item_type" name="item_type" onChange="Items.changeType(this)">
-			<option value="item" selected>Item</option>
-			<option value="command">Console command</option>
-			<option value="query">Query</option>
-		</select>
-	</form>
-
-	<form onSubmit="Items.create(this); return false" id="command_form" style="display:none;">
-
-		<label for="name">Name</label>
-		<input type="text" name="name" id="name" />
-
-		<label for="description">Description (very short; displayed below item name)</label>
-		<input type="text" name="description" id="description" />
-
-		<label for="quality">Item quality</label>
-		<select id="quality" name="quality">
-			<option value="0" class="q0">Poor</option>
-			<option value="1" class="q1">Common</option>
-			<option value="2" class="q2">Uncommon</option>
-			<option value="3" class="q3">Rare</option>
-			<option value="4" class="q4">Epic</option>
-			<option value="5" class="q5">Legendary</option>
-			<option value="6" class="q6">Artifact</option>
-			<option value="7" class="q7">Heirloom</option>
-		</select>
-
-		<label>Need character</label>
-		<input type="checkbox" id="command_need_character" name="command_need_character" checked="yes" value="1"/>
-		<label for="command_need_character" class="inline_label">Make the user select a character</label>
-
-		<label>Require offline</label>
-		<input type="checkbox" id="require_character_offline" name="require_character_offline" value="1"/>
-		<label for="require_character_offline" class="inline_label">Make sure the selected character is offline</label>
-
-		<label for="command">Command</label>
-		<textarea id="command" name="command"></textarea>
-		<span>
-			{literal}
-				<b>{ACCOUNT}</b> = Account Name, 
-				<b>{CHARACTER}</b> = Character Name
-			{/literal}
-		</span>
-
-		<label for="realm">Realm</label>
-		<select name="realm" id="realm">
-			{foreach from=$realms item=realm}
-				<option value="{$realm->getId()}">{$realm->getName()}</option>
+			{if $items}
+			<table class="table table-responsive-md table-hover">
+			<thead>
+				<tr>
+					<th>Icon</th>
+					<th>Name</th>
+					<th>Description</th>
+					<th>Group</th>
+					<th>Price</th>
+					<th style="text-align:center;">Actions</th>
+				</tr>
+			</thead>
+			<tbody id="ItemTableResult">
+			{foreach from=$items item=item}
+				<tr>
+					<td><img style="opacity:1;" src="https://icons.wowdb.com/retail/small/{$item.icon}.jpg" /></td>
+					<td data-bs-toggle="tooltip" data-placement="top" data-html="true" title="{$item.name}"><b class="q{$item.quality}">{character_limiter($item.name, 30)}</b></td>
+					<td data-bs-toggle="tooltip" data-placement="top" data-html="true" title="{$item.description}">{character_limiter($item.description, 20)}</td>
+					<td>{if array_key_exists("title", $item) && $item.title}{$item.title}{/if}</td>
+					<td>
+						{if $item.vp_price}
+							<img src="{$url}application/images/icons/lightning.png" style="opacity:1;margin-top:3px;position:absolute;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{$item.vp_price} VP
+						{/if}
+						{if $item.dp_price}
+							<img src="{$url}application/images/icons/coins.png" style="opacity:1;margin-top:3px;position:absolute;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+							{$item.dp_price} DP
+						{/if}
+					</td>
+					<td style="text-align:center;">
+						{if hasPermission("canEditItems")}
+							<a class="relative font-sans font-normal text-sm inline-flex items-center justify-center leading-5 no-underline h-8 px-3 py-2 space-x-1 border nui-focus transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed hover:enabled:shadow-none text-muted-700 border-muted-300 dark:text-white dark:bg-muted-700 dark:border-muted-600 dark:hover:enabled:bg-muted-600 hover:enabled:bg-muted-50 dark:active:enabled:bg-muted-700/70 active:enabled:bg-muted-100 rounded-md" href="{$url}store/admin_items/edit/{$item.id}">Edit</a>
+						{/if}
+			
+						{if hasPermission("canRemoveItems")}
+							<a class="relative font-sans font-normal text-sm inline-flex items-center justify-center leading-5 no-underline h-8 px-3 py-2 space-x-1 border nui-focus transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed hover:enabled:shadow-none text-muted-700 border-muted-300 dark:text-white dark:bg-muted-700 dark:border-muted-600 dark:hover:enabled:bg-muted-600 hover:enabled:bg-muted-50 dark:active:enabled:bg-muted-700/70 active:enabled:bg-muted-100 rounded-md" href="javascript:void(0)" onClick="Items.remove({$item.id}, this)">Delete</a>
+						{/if}
+					</td>
+				</tr>
 			{/foreach}
-		</select>
-
-		<label for="group">Item group</label>
-		<select name="group" id="group">
-			<option value="0">None</option>
+			</tbody>
+			</table>
+			{/if}
+      	</div>
+      	<div class="tab-pane" id="groups">
+			{if hasPermission("canAddGroups")}
+			<span class="pull-right">
+				<a class="relative font-sans font-normal text-sm inline-flex items-center justify-center leading-5 no-underline h-8 px-3 py-2 space-x-1 border nui-focus transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed hover:enabled:shadow-none text-muted-700 border-muted-300 dark:text-white dark:bg-muted-700 dark:border-muted-600 dark:hover:enabled:bg-muted-600 hover:enabled:bg-muted-50 dark:active:enabled:bg-muted-700/70 active:enabled:bg-muted-100 rounded-md" href="{$url}store/admin_items/add_group">Create group</a>&nbsp;
+			</span>
+			{/if}
+			<td>{if $groups}
+			<table class="table table-responsive-md table-hover">
+			<thead>
+				<tr>
+					<th>Order #</th>
+					<th>Name</th>
+					<th style="text-align:center;">Actions</th>
+				</tr>
+			</thead>
 			{foreach from=$groups item=group}
-				<option value="{$group.id}">{$group.title}</option>
+				<tr>
+					<td>{$group.orderNumber}</td>
+					<td>{$group.title}</td>
+					<td style="text-align:center;">
+						{if hasPermission("canEditGroups")}
+							<a class="relative font-sans font-normal text-sm inline-flex items-center justify-center leading-5 no-underline h-8 px-3 py-2 space-x-1 border nui-focus transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed hover:enabled:shadow-none text-muted-700 border-muted-300 dark:text-white dark:bg-muted-700 dark:border-muted-600 dark:hover:enabled:bg-muted-600 hover:enabled:bg-muted-50 dark:active:enabled:bg-muted-700/70 active:enabled:bg-muted-100 rounded-md" href="{$url}store/admin_items/edit_group/{$group.id}">Edit</a>
+						{/if}
+			
+						{if hasPermission("canRemoveGroups")}
+							<a class="relative font-sans font-normal text-sm inline-flex items-center justify-center leading-5 no-underline h-8 px-3 py-2 space-x-1 border nui-focus transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed hover:enabled:shadow-none text-muted-700 border-muted-300 dark:text-white dark:bg-muted-700 dark:border-muted-600 dark:hover:enabled:bg-muted-600 hover:enabled:bg-muted-50 dark:active:enabled:bg-muted-700/70 active:enabled:bg-muted-100 rounded-md" href="javascript:void(0)" onClick="Items.removeGroup({$group.id}, this, true)">Delete</a>
+						{/if}
+					</td>
+				</tr>
 			{/foreach}
-		</select>
+			</table>
+			{/if}
+      	</div>
+    </div>
+</div>
+</div>
 
-		<div class="vp_price">
-			<label for="vpCost">VP price</label>
-			<input type="text" name="vpCost" id="vpCost" value="0"/>
-		</div>
-
-		<div class="dp_price">
-			<label for="dpCost">DP price</label>
-			<input type="text" name="dpCost" id="dpCost" value="0"/>
-		</div>
-
-		<label for="icon">Icon name</label>
-		<input type="text" name="icon" id="icon" value="" />
-
-		<input type="submit" value="Save command" />
-	</form>
-
-	<form onSubmit="Items.create(this); return false" id="query_form" style="display:none;">
-
-		<label for="name">Name</label>
-		<input type="text" name="name" id="name" />
-
-		<label for="description">Description (very short; displayed below item name)</label>
-		<input type="text" name="description" id="description" />
-
-		<label for="quality">Item quality</label>
-		<select id="quality" name="quality">
-			<option value="0" class="q0">Poor</option>
-			<option value="1" class="q1">Common</option>
-			<option value="2" class="q2">Uncommon</option>
-			<option value="3" class="q3">Rare</option>
-			<option value="4" class="q4">Epic</option>
-			<option value="5" class="q5">Legendary</option>
-			<option value="6" class="q6">Artifact</option>
-			<option value="7" class="q7">Heirloom</option>
-		</select>
-
-		<label for="query_database">Database</label>
-		<select id="query_database" name="query_database">
-			<option value="cms">CMS</option>
-			<option value="realm">Realm (characters)</option>
-			<option value="realmd">Realmd (accounts/auth/logon)</option>
-		</select>
-
-		<label>Need character</label>
-		<input type="checkbox" id="query_need_character" name="query_need_character" checked="yes" value="1"/>
-		<label for="query_need_character" class="inline_label">Make the user select a character</label>
-
-		<label>Require offline</label>
-		<input type="checkbox" id="require_character_offline" name="require_character_offline" value="1"/>
-		<label for="require_character_offline" class="inline_label">Make sure the selected character is offline</label>
-
-		<label for="query" data-tip="Example query: UPDATE characters SET level = 80 WHERE guid = {literal}{CHARACTER}{/literal}">SQL query <a>(?)</a></label>
-		<textarea id="query" name="query"></textarea>
-		<span>
-			{literal}
-				<b>{ACCOUNT}</b> = Account ID, 
-				<b>{CHARACTER}</b> = Character ID, 
-				<b>{REALM}</b> = Realm ID
-			{/literal}
-		</span>
-
-		<label for="realm">Realm</label>
-		<select name="realm" id="realm">
-			{foreach from=$realms item=realm}
-				<option value="{$realm->getId()}">{$realm->getName()}</option>
-			{/foreach}
-		</select>
-
-		<label for="group">Item group</label>
-		<select name="group" id="group">
-			<option value="0">None</option>
-			{foreach from=$groups item=group}
-				<option value="{$group.id}">{$group.title}</option>
-			{/foreach}
-		</select>
-
-		<div class="vp_price">
-			<label for="vpCost">VP price</label>
-			<input type="text" name="vpCost" id="vpCost" value="0"/>
-		</div>
-
-		<div class="dp_price">
-			<label for="dpCost">DP price</label>
-			<input type="text" name="dpCost" id="dpCost" value="0"/>
-		</div>
-
-		<label for="icon">Icon name</label>
-		<input type="text" name="icon" id="icon" value="" />
-
-		<input type="submit" value="Submit query" />
-	</form>
-
-	<form onSubmit="Items.create(this); return false" id="item_form">
-
-		<label for="name">Name (only required for multiple items)</label>
-		<input type="text" name="name" id="name" placeholder="Will be added automatically if you only specify one item ID" />
-
-		<label for="itemid">Item ID (tip: separate ids with , (comma) to add multiple as one)</label>
-		<input type="text" name="itemid" id="itemid" placeholder="12345" />
-
-		<label for="description">Description (very short; displayed below item name)</label>
-		<input type="text" name="description" id="description" placeholder="For example, 'Head (Plate)'" />
-
-		<label for="realm">Realm</label>
-		<select name="realm" id="realm">
-			{foreach from=$realms item=realm}
-				<option value="{$realm->getId()}">{$realm->getName()}</option>
-			{/foreach}
-		</select>
-
-		<label for="group">Item group</label>
-		<select name="group" id="group">
-			<option value="0">None</option>
-			{foreach from=$groups item=group}
-				<option value="{$group.id}">{$group.title}</option>
-			{/foreach}
-		</select>
-
-		<div class="vp_price">
-			<label for="vpCost">VP price</label>
-			<input type="text" name="vpCost" id="vpCost" value="0"/>
-		</div>
-
-		<div class="dp_price">
-			<label for="dpCost">DP price</label>
-			<input type="text" name="dpCost" id="dpCost" value="0"/>
-		</div>
-
-		<label for="icon">Icon name</label>
-		<input type="text" name="icon" id="icon" placeholder="Will be added automatically if you leave empty, and only specify one item ID" />
-
-		<input type="submit" value="Submit item" />
-	</form>
-</section>
-
-<section class="box big" id="add_group" style="display:none;">
-	<h2><a href='javascript:void(0)' onClick="Items.addGroup()" data-tip="Return to items">Items</a> &rarr; New group</h2>
-
-	<form onSubmit="Items.create(this, true); return false">
-		<label for="title">Group name</label>
-		<input type="text" name="title" id="title" />
-
-		<label for="order" data-tip="Specify an order, it will be sorted ascending by group order">Group order</label>
-		<input type="text" name="order" id="order" />
-
-		<input type="submit" value="Submit group" />
-	</form>
-</section>
+<script>
+    $(document).ready(function () {
+   
+        $("#ItemSeachInput").on("keyup", function () {
+            var value = $(this).val().toLowerCase();     
+            $("#ItemTableResult tr").filter(function () {
+                $(this).toggle($(this).text()
+                  .toLowerCase().indexOf(value) > -1)
+            });
+        });
+    });
+</script>

@@ -29,20 +29,37 @@ var Theme = {
 
 	select: function(name)
 	{
-		$('#theme_list_text').html('<h2><img src="' + Config.URL + 'application/themes/admin/images/icons/black16x16/ic_picture.png"/> Themes</h2><span id="theme_ajax_spot">Activating theme...</span>');
-
-		$.get(Config.URL + "admin/theme/set/" + name, function(data)
-		{
-			if(data == "yes")
-			{
-				UI.alert('The theme has been changed!', 1000);
-				Router.load(Config.URL + "admin/theme/");
-			}
-			else
-			{
-				UI.alert(data, 1000);
-				Router.load(Config.URL + "admin/theme/");
-			}
-		});
+			Swal.fire({
+			  title: 'Do you want to change the theme to "'+ name +'"?',
+			  showDenyButton: true,
+			  showCancelButton: false,
+			  confirmButtonText: 'Change',
+			  denyButtonText: `Don't change`,
+			  icon: 'question'
+			}).then((result) => {
+				if (result.isConfirmed) {
+					$.get(Config.URL + "admin/theme/set/" + name, function(data) {
+						if(data == "yes") {
+							Swal.fire({
+							  title: 'Theme was saved!',
+							  showDenyButton: false,
+							  showCancelButton: false,
+							  confirmButtonText: 'OK',
+							  icon: 'success'
+							}).then((result) => {
+								//Remove dsiabled from all button and set text to enabled
+								$("#all_themes .theme_action button").removeAttr("disabled");
+								$("#all_themes .theme_action button").text("Enable");
+								
+								//Add to button disabled state and current Text
+								$("#btn-"+ name).attr("disabled", "true");
+								$("#btn-"+ name).text("Current");
+							});
+						} else {
+							Swal.fire(data, '', 'info');
+						}
+					});
+				}
+			})
 	}
 }

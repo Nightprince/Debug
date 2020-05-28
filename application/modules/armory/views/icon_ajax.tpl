@@ -1,5 +1,5 @@
 <span class="get_icon_{$id}">
-	<img src="{$url}application/images/armory/default/loading.gif" width="18" height="18"/>
+	<i class="fas fa-spinner fa-sm fa-spin"></i>
 </span>
 
 <script type="text/javascript">
@@ -9,7 +9,7 @@
 	 	{
 	 		$(".get_icon_" + {$id}).each(function()
 	 		{
-	 			$(this).html("<img src='https://wow.zamimg.com/images/wow/icons/small/" + data + ".jpg' align='absmiddle'/>");
+	 			$(this).html("<img src='https://icons.wowdb.com/retail/small/" + data + ".jpg' align='absmiddle'/>");
 	 		});
 	 	});
 	});

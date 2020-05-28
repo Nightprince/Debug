@@ -2,14 +2,16 @@
 
 /**
  * English language support
+ *
  * @author Jesper Lindström
  */
 
 /**
  * 2-letter language abbreviation, used for flag icons
+ *
  * @see http://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
  */
-$lang['abbreviation'] = "gb";
+$lang['abbreviation'] = "en";
 
 // User panel abbreviation
 $lang['ucp'] = "UCP";
@@ -46,3 +48,24 @@ $lang['reason'] = "Reason:";
 $lang['banned'] = "banned";
 $lang['close_tool'] = "Close tool";
 $lang['offline'] = "Offline";
+
+$lang['voting_points'] = "Voting points";
+$lang['donation_points'] = "Donation points";
+
+$lang['change_avatar'] = "Change avatar";
+
+// UCP nav
+$lang['vote'] = "Vote";
+$lang['donate'] = "Donate";
+$lang['store'] = "Store";
+$lang['account_settings'] = "Account Settings";
+$lang['teleport_hub'] = "Teleport Hub";
+
+$lang['mod_panel'] = "Mod Panel";
+$lang['admin_panel'] = "Admin Panel";
+
+$lang['login'] = "Login";
+$lang['logout'] = "Logout";
+$lang['register'] = "Register";
+$lang['account'] = "Account";
+

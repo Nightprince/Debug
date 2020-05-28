@@ -26,17 +26,29 @@ var Changelog = {
 		var identifier = this.identifier,
 			removeLink = this.Links.remove;
 
-		UI.confirm("Do you really want to delete this " + identifier + "?", "Yes", function()
-		{
-			$("#" + identifier + "_count").html(parseInt($("#" + identifier + "_count").html()) - 1);
+		Swal.fire({
+				title: 'Do you really want to delete this ' + identifier + '?',
+				text: "You won't be able to revert this!",
+				icon: 'warning',
+				showCancelButton: true,
+				confirmButtonColor: '#3085d6',
+				cancelButtonColor: '#d33',
+				confirmButtonText: 'Yes, delete it!'
+			}).then((result) => {
+			if (result.isConfirmed) {
+				$("#" + identifier + "_count").html(parseInt($("#" + identifier + "_count").html()) - 1);
 
-			$(element).parents("li").slideUp(300, function()
-			{
-				$(this).remove();
-			});
+				$(element).parents("tr").slideUp(300, function()
+				{
+					$(this).remove();
+				});
 
-			$.get(Config.URL + removeLink + id);
-		});
+				$.get(Config.URL + removeLink + id, function(data)
+				{
+					console.log(data);
+				});
+			}
+			})
 	},
 
 	/**
@@ -111,32 +123,36 @@ var Changelog = {
 	 */
 	addChange: function(id)
 	{
-		var addHTML = '<textarea id="change_message" rows="4" placeholder="Changelog message..."></textarea>';
-
-		UI.confirm(addHTML, "Submit", function()
-		{
-			var change_message = $("#change_message").val();
-
-			$.post(Config.URL + "changelog/admin/addChange/" + id, {csrf_token_name:Config.CSRF, change_message:change_message}, function(data)
+		(async () => {
+		const { value: text } = await Swal.fire({
+		input: 'textarea',
+		inputLabel: 'Message',
+		inputPlaceholder: 'Changelog message...',
+		inputAttributes: {
+			'aria-label': 'Changelog message...'
+		},
+		showCancelButton: true
+		})
+		if (text) {
+			$.post(Config.URL + "changelog/admin/addChange/" + id, {csrf_token_name:Config.CSRF, change_message:text}, function(data)
 			{
 				data = JSON.parse(data);
 				console.log(data);
-				$("#headline_" + id).after('<li style="display:none;">' +
-						'<table width="100%">' +
+				$("#headline_" + id).after('<table class="table table-responsive-md">' +
 							'<tr>' +
-								'<td width="40%">' + data.changelog +'</td>' +
-								'<td width="20%">' + data.author + '</td>' +
-								'<td width="20%">' + data.date + '</td>' +
-								'<td style="text-align:right;" width="10%">' +
-									'<a href="' + Config.URL + 'changelog/admin/edit/' + data.id + '" data-tip="Edit"><img src="' + Config.URL + 'application/themes/admin/images/icons/black16x16/ic_edit.png" /></a>&nbsp;'+
-									'<a href="javascript:void(0)" onClick="Changelog.remove(' + data.id + ', this)" data-tip="Delete"><img src="' + Config.URL + 'application/themes/admin/images/icons/black16x16/ic_minus.png" /></a>'+
+								'<td>' + data.changelog +'</td>' +
+								'<td>' + data.author + '</td>' +
+								'<td>' + data.date + '</td>' +
+								'<td style="text-align:center;">' +
+									'<a class="btn btn-primary btn-sm" href="' + Config.URL + 'changelog/admin/edit/' + data.id + '" data-tip="Edit"><i class="fa-solid fa-pen-to-square"></i></a>&nbsp;'+
+									'<a class="btn btn-primary btn-sm" href="javascript:void(0)" onClick="Changelog.remove(' + data.id + ', this)" data-tip="Delete"><i class="fa-solid fa-trash-can"></i></a>'+
 								'</td>' +
 							'</tr>' +
-						'</table>' +
-					'</li>');
+						'</table>');
 				$("#headline_" + id).next().slideDown(300);
 			});
-		});
+		}
+		})()
 	},
 
 	/**
@@ -148,35 +164,51 @@ var Changelog = {
 	{
 		var identifier = this.identifier,
 			removeLink = this.Links.removeCategory;
+		var entries = $(element).parents("tr").children("tr").length - 1;
 
-		UI.confirm("Do you really want to delete this category and all it's entries?", "Yes", function()
-		{
-			var entries = $(element).parents("ul").children("li").length - 1;
+			Swal.fire({
+				title: 'Do you really want to delete this category and all it\'s entries?',
+				text: "You won't be able to revert this!",
+				icon: 'warning',
+				showCancelButton: true,
+				confirmButtonColor: '#3085d6',
+				cancelButtonColor: '#d33',
+				confirmButtonText: 'Yes, delete it!'
+			}).then((result) => {
+			if (result.isConfirmed) {
+				$("#" + identifier + "_count").html(parseInt($("#" + identifier + "_count").html()) - entries);
 
-			$("#" + identifier + "_count").html(parseInt($("#" + identifier + "_count").html()) - entries);
+				$(element).parents("tr").slideUp(300, function()
+				{
+					$(this).remove();
+				});
 
-			$(element).parents("ul").fadeOut(300, function()
-			{
-				$(this).remove();
-			});
-
-			$.get(Config.URL + removeLink + id);
-		});
+				$.get(Config.URL + removeLink + id, function(data)
+				{
+					console.log(data);
+				});
+			}
+			})
 	},
 
 	renameCategory: function(id, field)
 	{
 		var nameField = $(field).parents("td").prev("td").children("b");
+		var renameHTML = '<input type="text" id="rename" value="' + nameField.html() + '">';
 
-		var renameHTML = "<input type='text' id='rename' value=" + nameField.html() + ">";
+		Swal.fire({
+			title: 'Rename category',
+			html: renameHTML,
+			focusConfirm: false,
+			}).then((result) => {
+				var name = $("#rename").val();
+				nameField.html(name);
 
-		UI.confirm(renameHTML, "Save", function()
-		{
-			var name = $("#rename").val();
-
-			nameField.html(name);
-
-			$.post(Config.URL + Changelog.Links.saveCategory + id, {csrf_token_name:Config.CSRF, typeName:name});
-		});
+				$.post(Config.URL + Changelog.Links.saveCategory + id, {csrf_token_name:Config.CSRF, typeName:name});
+					Swal.fire({
+					icon: 'success',
+					title: 'Category saved!',
+				})
+			})
 	}
 }

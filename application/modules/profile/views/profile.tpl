@@ -1,61 +1,128 @@
-<section id="ucp_top">
-	<a id="ucp_avatar" style="width:44px;height:44px;margin-top:7px;">
-		<img src="{$avatar}" height="44" width="44"/>
-	</a>
+<div class="container">
+	<div class="row">
 
-	<section id="ucp_info" style="height:auto;">
-		<aside style="height:auto;width:190px;margin-right:10px;">
-			<table width="100%">
-				<tr>
-					<td width="10%"><img src="{$url}application/images/icons/user.png" /></td>
-					<td width="40%">{lang("nickname", "profile")}</td>
-					<td width="50%" style="overflow:hidden;">{$username}</td>
-				</tr>
-				<tr>
-					<td width="10%"><img src="{$url}application/images/icons/world.png" /></td>
-					<td width="40%">{lang("location", "profile")}</td>
-					<td width="50%">{$location}</td>
-				</tr>
-			</table>
-		</aside>
+	<div class="col-lg-4 py-5 pe-lg-5">
+		<div class="w-100 text-center mb-5">
+			<div class="user-avatar">
+				<img src="{$avatar}" alt="avatar" class="rounded-circle">
+				<div class="blend"></div>
+			</div>			
+		</div>
 
-		<aside style="height:auto;width:190px;">
-			<table width="100%">
-				<tr>
-					<td width="10%"><img src="{$url}application/images/icons/shield.png" /></td>
-					<td width="40%">{lang("status", "profile")}</td>
-					<td width="50%">{$status}</td>
-				</tr>
-				<tr>
-					<td width="10%"><img src="{$url}application/images/icons/date.png" /></td>
-					<td width="40%">{lang("signed_up", "profile")}</td>
-					<td width="50%">{$register_date}</td>
-				</tr>
-			</table>
-		</aside>
-		<aside style="height:auto;width:200px;padding-left:10px;">
-			<table width="100%">
-				<tr>
-					<td width="10%"><img src="{$url}application/images/icons/award_star_bronze_1.png" /></td>
-					<td width="20%">{lang("rank", "profile")}</td>
-					<td width="70%">{foreach from=$groups item=group} <span {if $group.color}style="color:{$group.color}"{/if}>{$group.name}</span> {/foreach}</td>
-				</tr>
-				{if $online && $not_me}
-					<tr>
-						<td><img src="{$url}application/images/icons/email.png" /></td>
-						<td>{lang("contact", "profile")}</td>
-						<td><a href="{$url}messages/create/{$id}">{lang("pm", "profile")}</a></td>
-					</tr>
-				{else}
-					<tr>
-						<td>&nbsp;</td>
-						<td></td>
-					</tr>
-				{/if}
-			</table>
-		</aside>
-	</section>
+		<div class="section-header">{lang("profile_nav", "profile")}</div>
+		<div class="section-body">
 
-	<div style="clear:both;"></div>	
-</section>
-{$characters}
+			<div class="list-group mb-3">
+				<a href="javascript:void(0);" class="list-group-item list-group-item-action active" data-bs-toggle="tab" data-bs-target="#nav-overview" type="button" role="tab" aria-controls="nav-overview" aria-selected="true">Overview</a>
+				<!--<a href="javascript:void(0);" class="list-group-item list-group-item-action" data-bs-toggle="tab" data-bs-target="#nav-forum-posts" type="button" role="tab" aria-controls="nav-forum-posts" aria-selected="false">Forum Posts</a>
+				<a href="javascript:void(0);" class="list-group-item list-group-item-action" data-bs-toggle="tab" data-bs-target="#nav-bugtracker-posts" type="button" role="tab" aria-controls="nav-bugtracker-posts" aria-selected="false">Bugtracker Posts</a>-->
+			</div>
+
+			<!--<div class="btn-group w-100" role="group">
+				<button type="button" class="btn btn-primary text-light">Edit</button>
+				<button type="button" class="btn btn-danger text-light">Ban</button>
+			</div>-->
+		</div>
+	</div>
+
+	<div class="col-lg-8 py-lg-5 pb-5 pb-lg-0">
+		<div class="tab-content" id="nav-tabContent">
+			<div class="tab-pane fade show active" id="nav-overview" role="tabpanel" aria-labelledby="nav-overview-tab">
+				<div class="section-header">Profile <span>Overview</span></div>
+				<div class="section-body">
+					<table class="table table-borderless table-responsive user-table">
+						<tr>
+							<td><div class="user-table-icon"><i class="fas fa-user"></i></div> {lang("nickname", "profile")}</td>
+							<td>{$username}</td>
+						</tr>
+						
+						<tr><td class="pb-3"></td></tr>
+						
+						<tr>
+							<td><div class="user-table-icon"><i class="fa-solid fa-user-lock"></i></div> {lang("account_status", "profile")}</td>
+							<td colspan="2">{$status}</td>
+						</tr>
+						<tr>
+							<td><div class="user-table-icon"><i class="fa-solid fa-calendar"></i></div> {lang("member_since", "profile")}</td>
+							<td colspan="2">{$register_date}</td>
+						</tr>
+						<tr>
+							<td><div class="user-table-icon"><i class="fa-solid fa-user-shield"></i></div> {lang("account_rank", "profile")}</td>
+							<td colspan="2">{foreach from=$groups item=group} <span {if $group.color}style="color:{$group.color}"{/if}>{$group.name}</span> {/foreach}</td>
+						</tr>
+						
+						<tr><td class="pb-3"></td></tr>
+						
+						<tr>
+							<td><div class="user-table-icon"><i class="fa-solid fa-location-dot"></i></div> {lang("location", "profile")}</td>
+							<td>{$location}</td>
+						</tr>
+
+						<tr><td class="pb-3"></td></tr>
+						
+						<!--<tr>
+							<td><div class="user-table-icon"><i class="fa-solid fa-pen-to-square"></i></div> {lang("forum_posts", "profile")}</td>
+							<td>0</td>
+						</tr>
+						<tr>
+							<td><div class="user-table-icon"><i class="fa-solid fa-square-pen"></i></div> {lang("forum_threads", "profile")}</td>
+							<td>0</td>
+						</tr>-->
+					</table>
+				</div>
+
+				{$characters}
+			</div>
+
+			<div class="tab-pane fade" id="nav-forum-posts" role="tabpanel" aria-labelledby="nav-forum-posts-tab">
+				{for $i = 0; $i<10; $i++}
+					<div class="card mb-3">
+						<div class="row no-gutters">
+							<div class="col-auto position-relative">
+								<div class="card-block p-3">
+									<a href="javascript:void(0);" class="card-title d-block h4 text-truncate">Forum Ipsum {$i}</a>
+									<h6 class="card-subtitle mb-4">
+										<div class="d-flex">
+										
+											<div class="user me-3">
+												<i class="fas fa-user"></i>
+												<a href="{$url}profile/1">Admin</a>
+											</div>
+										
+											<div class="time me-3">
+												<i class="fas fa-clock"></i>
+												<a href="javascript:void(0);">DateTIme</a>
+											</div>
+									
+											<div class="tags me-3">
+												<i class="fa-solid fa-tag"></i>
+												<a href="{$url}/tags">Tag</a>
+											</div>
+
+											<div class="comments">
+												<i class="fas fa-comments"></i>
+												<a href="javascript:void(0)">0</a>
+											</div>
+											
+										</div>
+									</h6>
+									<div class="card-text">
+										Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea t...
+
+										<p class="text-end"><a href="{$url}news/1" class="btn btn-xs btn-dark text-1 text-uppercase">Read More</a></p>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				{/for}
+			</div>
+
+			<div class="tab-pane fade" id="nav-bugtracker-posts" role="tabpanel" aria-labelledby="nav-bugtracker-posts-tab">
+				Bugtracker
+			</div>
+		</div>
+	</div>
+
+	</div>
+</div>

@@ -53,10 +53,6 @@ var Fusion_Cache = {
 				$("#row_website").html('<div class="progress_bar"><a style="width:0%"></a></div>');
 			break;
 
-			case "message":
-				$("#row_message").html('<div class="progress_bar"><a style="width:0%"></a></div>');
-			break;
-
 			case "all":
 				$("#row_website").html('<div class="progress_bar"><a style="width:0%"></a></div>');
 				$("#row_message").html('<div class="progress_bar"><a style="width:0%"></a></div>');
@@ -107,13 +103,6 @@ var Fusion_Cache = {
 					});
 				break;
 
-				case "message":
-					$("#row_message .progress_bar a").animate({width:"100%"}, 200, function()
-					{
-						$("#row_message").html("0 files (0 B)");
-					});
-				break;
-
 				case "all":
 					$("#row_website .progress_bar a").animate({width:"100%"}, 200, function()
 					{
@@ -152,15 +141,8 @@ var Fusion_Cache = {
 			size: Fusion_Cache.toBytes(websiteHTML[1])
 		};
 
-		var messageHTML = $("#row_message").html().replace(")", "").split(" files (");
-
-		var message = {
-			files: parseInt(messageHTML[0]),
-			size: Fusion_Cache.toBytes(messageHTML[1])
-		};
-
-		var totalFiles = message.files + website.files + item.files,
-			totalSize = Fusion_Cache.formatSize(parseInt(website.size + item.size + message.size));
+		var totalFiles = website.files + item.files,
+			totalSize = Fusion_Cache.formatSize(parseInt(website.size + item.size));
 
 		$("#row_total").html("<b>" + totalFiles + " files (" + totalSize + ")</b>")
 

@@ -18,7 +18,6 @@ class Install
 				case "config": $this->config(); break;
 				case "database": $this->database(); break;
 				case "realms": $this->realms(); break;
-				case "ranks": $this->ranks(); break;
 				case "folder": $this->check(); break;
 				case "checkPhpExtensions": $this->checkPhpExtensions(); break;
 				case "checkApacheModules": $this->checkApacheModules(); break;
@@ -56,7 +55,7 @@ class Install
     
     private function checkPhpExtensions()
     {
-        $req = array('mysqli', 'curl', 'openssl', 'soap', 'gd', 'mbstring', 'json');
+        $req = array('mysqli', 'curl', 'openssl', 'soap', 'gd', 'mbstring', 'json', 'xml', 'zip');
         $loaded = get_loaded_extensions();
         $errors = array();
         
@@ -82,7 +81,7 @@ class Install
     
     private function checkPhpVersion()
     {
-		die( version_compare(PHP_VERSION, '7.3', '>=') ? '1' : '0' );
+		die( version_compare(PHP_VERSION, '8.0.0', '>=') ? '1' : '0' );
     }
 	
 	private function checkDbConnection()
@@ -93,14 +92,14 @@ class Install
 			if ( ! isset($_POST[$var]) || empty($_POST[$var]))
 				die('Please fill all fields.');
 		}
-		
-		@$db = new Mysqli(
-			$_POST['hostname'], 
-			$_POST['username'], 
-			$_POST['password'], 
-			$_POST['database'],
-			isset($_POST['port']) ? $_POST['port'] : self::MYSQL_DEFAULT_PORT 
-		);
+
+	    @$db = new mysqli(
+	    	$_POST['hostname'], 
+	    	$_POST['username'], 
+	    	$_POST['password'], 
+	    	$_POST['database'],
+	    	isset($_POST['port']) ? $_POST['port'] : self::MYSQL_DEFAULT_PORT 
+	    );
 		
 		die($db->connect_error ? $db->connect_error : '1');
 	}
@@ -128,60 +127,16 @@ class Install
 		$data['analytics'] = ($_POST['analytics']) ? $_POST['analytics'] : false;
 		$data['cdn'] = ($_POST['cdn'] == '1') ? true : false;
 		$data['security_code'] = $_POST['security_code'];
+		$data['max_expansion'] = $_POST['max_expansion'];
 
 		foreach($data as $key => $value)
 		{
 			$config->set($key, $value);
 		}
 
-		if(in_array($_POST['emulator'], array('arcemu', 'summitemu')))
-		{
-			switch($_POST['expansion'])
-			{
-				case "wotlk":
-					$config->set('disabled_expansions', array(32));
-				break;
-
-				case "tbc":
-					$config->set('disabled_expansions', array(24,32));
-				break;
-
-				case "vanilla":
-					$config->set('disabled_expansions', array(8,24,32));
-				break;
-			}
-		}
-		else
-		{
-			switch($_POST['expansion'])
-			{
-				case "wod":
-					$config->set('disabled_expansions', array(6));
-				break;
-				case "mop":
-					$config->set('disabled_expansions', array(5,6));
-				break;
-				case "cata":
-					$config->set('disabled_expansions', array(4,5,6));
-				break;
-				case "wotlk":
-					$config->set('disabled_expansions', array(3,4,5,6));
-				break;
-				case "tbc":
-					$config->set('disabled_expansions', array(2,3,4,5,6));
-				break;
-				case "vanilla":
-					$config->set('disabled_expansions', array(1,2,3,4,5,6));
-				break;
-				default:
-					$config->set('disabled_expansions', array());
-				break;
-			}
-		}
-
 		$config->save();
 
-		$config = '../application/config/recaptcha.php';
+		$config = '../application/config/captcha.php';
 		$config = new ConfigEditor($config);
 
 		$data['use_captcha'] = ($_POST['captcha'] == '1') ? true : false;
@@ -225,7 +180,7 @@ $db["account"]["database"] = "'.$_POST['realmd_database'].'";
 $db["account"]["port"]     = '.(is_numeric($_POST['realmd_port']) ? $_POST['realmd_port'] : self::MYSQL_DEFAULT_PORT).';
 $db["account"]["dbdriver"] = "mysqli";
 $db["account"]["dbprefix"] = "";
-$db["account"]["pconnect"] = TRUE;
+$db["account"]["pconnect"] = FALSE;
 $db["account"]["db_debug"] = TRUE;
 $db["account"]["cache_on"] = FALSE;
 $db["account"]["cachedir"] = "";
@@ -342,31 +297,6 @@ $db["account"]["stricton"] = FALSE;';
 									'".$this->db->real_escape_string($realm['db_port'])."',
 									'".$this->db->real_escape_string($realm['db_port'])."')");
 			}
-		}
-
-		die('1');
-	}
-
-	private function ranks()
-	{
-		$this->connect();
-
-		switch($_POST['emulator'])
-		{
-			case "arcemu":
-				$this->SplitSQL("SQL/ranks_arcemu.sql");
-			break;
-
-			case "summitemu":
-				$this->SplitSQL("SQL/ranks_arcemu.sql");
-			break;
-
-			case "mangos_ra":
-			case "mangos_soap":
-			case "mangosr2_ra":
-			case "mangosr2_soap":
-				$this->SplitSQL("SQL/ranks_mangos.sql");
-			break;
 		}
 
 		die('1');

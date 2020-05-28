@@ -2,51 +2,80 @@
 
 class Donate extends MX_Controller
 {
-	function __construct()
-	{
-		//Call the constructor of MX_Controller
-		parent::__construct();
-		
-		//Make sure that we are logged in
-		$this->user->userArea();
+    public function __construct()
+    {
+        parent::__construct();
 
-		$this->load->config('donate');
-	}
-	
-	public function index()
-	{
-		requirePermission("view");
+        $this->user->userArea();
 
-		$this->template->setTitle(lang("donate_title", "donate"));
+        $this->load->config('paypal');
+        $this->load->model('donate_model');
+        $this->load->model('paypal_model');
+    }
 
-		$donate_paypal = $this->config->item('donate_paypal');
-		$donate_paygol = $this->config->item('donate_paygol');
-		
-		$user_id = $this->user->getId();
-		
-		$data = array(
-			"donate_paypal" => $donate_paypal, 
-			"donate_paygol" => $donate_paygol,
-			"user_id" => $user_id,
-			"server_name" => $this->config->item('server_name'),
-			"currency" => $this->config->item('donation_currency'),
-			"currency_sign" => $this->config->item('donation_currency_sign'),
-			"multiplier" => $this->config->item('donation_multiplier'),
-			"multiplier_paygol" => $this->config->item('donation_multiplier_paygol'),
-			"url" => pageURL
-		);
+    public function index()
+    {
+        requirePermission("view");
 
-		$output = $this->template->loadPage("donate.tpl", $data);
+        $this->template->setTitle(lang("donate_title", "donate"));
 
-		$this->template->box("<span style='cursor:pointer;' onClick='window.location=\"".$this->template->page_url."ucp\"'>".lang("ucp")."</span> &rarr; ".lang("donate_panel", "donate"), $output, true, "modules/donate/css/donate.css", "modules/donate/js/donate.js");
-	}
+        $donate_paypal = $this->config->item('donate_paypal');
 
-	public function success()
-	{
-		$this->user->getUserData();
+        $user_id = $this->user->getId();
 
-		$page = $this->template->loadPage("success.tpl", array('url' => $this->template->page_url));
+        $paypal = array(
+            "values" => $this->paypal_model->getDonations()
+        );
 
-		$this->template->box(lang("donate_thanks", "donate"), $page, true);
-	}
+        if ($this->input->post())
+        {
+            if ($this->input->post("donation_type") == "paypal")
+            {
+                $this->paypal_model->getDonate($this->input->post("data_id"));
+            }
+        }
+
+        $data = array(
+            "paypal" => $paypal,
+            "user_id" => $user_id,
+            "server_name" => $this->config->item('server_name'),
+            "currency" => $this->config->item('donation_currency'),
+            "currency_sign" => $this->config->item('donation_currency_sign'),
+        );
+
+        $data['use_paypal'] = (!empty($this->config->item("paypal_userid")) && !empty($this->config->item("paypal_secretpass")) && $this->config->item("use_paypal")) ? true : false;
+
+        $output = $this->template->loadPage("donate.tpl", $data);
+
+        $this->template->box("<span style='cursor:pointer;' onClick='window.location=\"" . $this->template->page_url . "ucp\"'>" . lang("ucp") . "</span> &rarr; " . lang("donate_panel", "donate"), $output, true, "modules/donate/css/donate.css", "modules/donate/js/donate.js");
+    }
+
+    public function canceled()
+    {
+        $this->paypal_model->setCanceled($this->input->get("token"), '2');
+        redirect(base_url('/donate'));
+    }
+
+    public function checkPaypal($id)
+    {
+        $this->paypal_model->check($id);
+    }
+
+    public function success()
+    {
+        $this->user->getUserData();
+
+        $page = $this->template->loadPage("success.tpl", array('url' => $this->template->page_url));
+
+        $this->template->box(lang("donate_thanks", "donate"), $page, true);
+    }
+
+    public function error()
+    {
+        $data = array('msg' => $this->session->userdata('paypal_error'));
+
+        $page = $this->template->loadPage("error.tpl", $data);
+
+        $this->template->box(lang("donate_error", "donate"), $page, true);
+    }
 }

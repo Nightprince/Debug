@@ -2,326 +2,368 @@
 
 class Admin extends MX_Controller
 {
-	private $coreModules;
+    private $coreModules;
 
-	public function __construct()
-	{
-		parent::__construct();
+    public function __construct()
+    {
+        parent::__construct();
 
-		$this->load->config('performance');
+        $this->load->config('performance');
 
-		$this->coreModules = array('admin', 'login', 'logout', 'errors', 'news');
+        $this->coreModules = array('admin', 'login', 'logout', 'errors', 'news', 'mod');
 
-		// Make sure to load the administrator library!
-		$this->load->library('administrator');
+        $this->load->library('administrator');
 
-		// Load the JSON prettifier
-		require_once('application/libraries/Prettyjson.php');
+        require_once('application/libraries/Prettyjson.php');
 
-		$this->load->model('dashboard_model');
+        $this->load->model('dashboard_model');
 
-		requirePermission("view");
-	}
+        requirePermission("view");
+    }
 
-	public function index()
-	{
-		// Change the title
-		$this->administrator->setTitle("Dashboard");
+    public function index()
+    {
+        $this->administrator->setTitle("Dashboard");
 
-		$this->administrator->loadModules();
+        $this->administrator->loadModules();
 
-		// Prepare my data
-		$data = array(
-			'url' => $this->template->page_url,
-			'enabled_modules' => $this->administrator->getEnabledModules(),
-			'disabled_modules' => $this->administrator->getDisabledModules(),
-			'theme' => $this->template->theme_data,
-			'version' => $this->administrator->getVersion(),
-			'php_version' => phpversion(),
-			'header_url' => $this->config->item('header_url'),
-			'theme_value' => $this->config->item('theme'),
-			'unique' => $this->getUnique(),
-			'views' => $this->getViews(),
-			'income' => $this->getIncome(),
-			'votes' => $this->getVotes(),
-			'signups' => $this->getSignups(),
-			'graph' => $this->getGraph(),
-			'pendingUpdate' => $this->getPendingUpdate(),
-			'latestVersion' => $this->getLatestVersion(),
-		);
+        // Load realm objects
+        $realms = $this->realms->getRealms();
 
-		// Load my view
-		$output = $this->template->loadPage("dashboard.tpl", $data);
+        $uptimes = $this->flush_uptime($realms);
 
-		// Put my view in the main box with a headline
-		$content = $this->administrator->box('Dashboard', $output);
+        $data = array(
+            'url' => $this->template->page_url,
+            'enabled_modules' => $this->administrator->getEnabledModules(),
+            'disabled_modules' => $this->administrator->getDisabledModules(),
+            'theme' => $this->template->theme_data,
+            'version' => $this->administrator->getVersion(),
+            'php_version' => phpversion(),
+            'ci_version' => CI_VERSION,
+            'theme_value' => $this->config->item('theme'),
+            'unique' => $this->getUnique(),
+            'views' => $this->getViews(),
+            'income' => $this->getIncome(),
+            'votes' => $this->getVotes(),
+            "nickname" => $this->user->getNickname(),
+            "avatar" => $this->user->getAvatar($this->user->getId()),
+            "groups" => $this->acl_model->getGroupsByUser($this->user->getId()),
+            "email" => $this->user->getEmail(),
+            "location" => $this->internal_user_model->getLocation(),
+            "register_date" => $this->user->getRegisterDate(),
+            'signups' => $this->getSignups(),
+            'graphMonthly' => $this->graphMonthly(),
+            'graphDaily' => $this->graphDaily(),
+            "realm_status" => $this->config->item('disable_realm_status'),
+            "realms" => $realms,
+            "uptimes" => $uptimes,
+        );
 
-		// Output my content. The method accepts the same arguments as template->view
-		$this->administrator->view($content, false, "modules/admin/js/admin.js");
-	}
+        $output = $this->template->loadPage("dashboard.tpl", $data);
 
-	private function getPendingUpdate()
-	{
-		if(!is_dir("update") || !is_dir("update/updates"))
-		{
-			return false;
-		}
+        $content = $this->administrator->box('Dashboard', $output);
 
-		$updates = array(0 => "");
+        $this->administrator->view($content, false);
+    }
 
-		$updatePackages = glob("update/updates/*/");
+    private function getUnique()
+    {
+        $data['today'] = $this->dashboard_model->getUnique("today");
+        $data['month'] = $this->dashboard_model->getUnique("month");
 
-		if($updatePackages)
-		{
-			foreach($updatePackages as $path)
-			{
-				if(is_dir($path))
-				{
-					$version = preg_replace("/[a-z\/]*/i", "", $path);
-					$version = preg_replace("/_/", ".", $version);
+        return $data;
+    }
 
-					array_push($updates, $version);
-				}
-			}
+    private function getViews()
+    {
+        $data['today'] = $this->dashboard_model->getViews("today");
+        $data['month'] = $this->dashboard_model->getViews("month");
 
-			$updates = array_reverse($updates);
-		}
+        return $data;
+    }
 
-		if($this->template->compareVersions($updates[0], $this->config->item('FusionCMSVersion'), true))
-		{
-			return $updates[0];
-		}
-	}
+    private function getIncome()
+    {
+        $data['this'] = $this->dashboard_model->getIncome("this");
+        $data['last'] = $this->dashboard_model->getIncome("last");
+        $data['growth'] = $data['this'] > 0 ? ((($data['this'] - $data['last']) / $data['last']) * 100) : 0;
 
-	private function getLatestVersion()
-	{
-		$content = @file_get_contents("https://raw.githubusercontent.com/Yekta-Core/FusionCMS/master/application/config/version.php");
-		if ($content)
-		    $newVersion = substr($content, 37, 5);
-		else
-		    $newVersion = false;
+        return $data;
+    }
 
-		if($this->template->compareVersions($newVersion, $this->config->item('FusionCMSVersion'), true))
-			return true;
-	}
+    private function getVotes()
+    {
+        $data['this'] = $this->dashboard_model->getVotes("this");
+        $data['last'] = $this->dashboard_model->getVotes("last");
+        $data['growth'] = $data['this'] > 0 ? ((($data['this'] - $data['last']) / $data['last']) * 100) : 0;
 
-	private function getUnique()
-	{
-		$data['today'] = $this->dashboard_model->getUnique("today");
-		$data['month'] = $this->dashboard_model->getUnique("month");
+        return $data;
+    }
 
-		return $data;
-	}
+    private function getSignups()
+    {
+        $data['today'] = $this->dashboard_model->getSignupsDaily("today");
+        $data['month'] = $this->dashboard_model->getSignupsDaily("month");
+        $data['this'] = $this->dashboard_model->getSignupsMonthly("this");
+        $data['last'] = $this->dashboard_model->getSignupsMonthly("last");
+        $data['growth'] = $data['this'] > 0 ? ((($data['this'] - $data['last']) / $data['last']) * 100) : 0;
 
-	private function getViews()
-	{
-		$data['today'] = $this->dashboard_model->getViews("today");
-		$data['month'] = $this->dashboard_model->getViews("month");
+        $cache = $this->cache->get("total_accounts");
 
-		return $data;
-	}
+        if ($cache !== false)
+        {
+            $data['total'] = $cache;
+        } else {
+            $data['total'] = $this->external_account_model->getAccountCount();
+            $this->cache->save("total_accounts", $data['total'], 60 * 60 * 24);
+        }
 
-	private function getIncome()
-	{
-		$data['this'] = $this->dashboard_model->getIncome("this");
-		$data['last'] = $this->dashboard_model->getIncome("last");
+        return $data;
+    }
 
-		return $data;
-	}
+    private function graphMonthly()
+    {
+        if ($this->config->item('disable_visitor_graph'))
+        {
+            return false;
+        }
 
-	private function getVotes()
-	{
-		$data['this'] = $this->dashboard_model->getVotes("this");
-		$data['last'] = $this->dashboard_model->getVotes("last");
+        $cache = $this->cache->get("dashboard_monthly");
 
-		return $data;
-	}
+        if ($cache !== false)
+        {
+            $data = $cache;
+        } else {
+            $rows = $this->dashboard_model->getGraph();
+            $fullGraph = array();
 
-	private function getSignups()
-	{
-		$data['today'] = $this->dashboard_model->getSignupsDaily("today");
-		$data['month'] = $this->dashboard_model->getSignupsDaily("month");
-		$data['this'] = $this->dashboard_model->getSignupsMonthly("this");
-		$data['last'] = $this->dashboard_model->getSignupsMonthly("last");
-		
-		$cache = $this->cache->get("total_accounts");
+            foreach ($rows as $row)
+            {
+                $expld = explode("-", $row["date"]);
 
-		if($cache !== false)
-		{
-			$data['total'] = $cache;
-		}
-		else
-		{
-			$data['total'] = $this->external_account_model->getAccountCount();
-			$this->cache->save("total_accounts", $data['total'], 60*60*24);
-		}
+                $year = $expld[0];
+                $month = $expld[1];
+                $date = $expld[2];
 
-		return $data;
-	}
+                $date = new DateTime();
+                $fullYear = array();
+                for ($i = 1; $i <= 12; $i++)
+                {
+                    if ($date->format("Y") == $year && $i > $date->format("m"))
+                    {
+                        continue;
+                    }
 
-	private function getGraph()
-	{
-		if($this->config->item('disable_visitor_graph'))
-		{
-			return false;
-		}
+                    if ($date->format("Y") != $year && $i < $date->format("m"))
+                    {
+                        continue;
+                    }
 
-		$cache = $this->cache->get("dashboard");
+                    $fullYear[($i < 10 ? "0" : "") . $i] = 0;
+                }
 
-		if($cache !== false)
-		{
-			$data = $cache;
-		}
-		else
-		{
-			$row = $this->dashboard_model->getGraph();
-			
-			$data = array(
-				'stack' => $this->arrayFormat($row),
-				'top' => $this->getHighestValue($row),
-				'first_date' => $this->getFirstDate($row),
-				'last_date' => $this->getLastDate($row)
-			);
+                if (!isset($fullGraph[$year]["month"]))
+                {
+                    $fullGraph[$year]["month"] = $fullYear;
+                }
 
-			$this->cache->save("dashboard", $data, 60*60*24);
-		}
+                if (isset($fullGraph[$year]["month"][$month]))
+                {
+                    $fullGraph[$year]["month"][$month] = $fullGraph[$year]["month"][$month] + $row["ipCount"];
+                }
+            }
 
-		return $data;
-	}
+            $data = $fullGraph;
 
-	private function getHighestValue($array)
-	{
-		if($array)
-		{
-			$highest = 0;
+            $this->cache->save("dashboard_monthly", $data, 60 * 60 * 24);
+        }
 
-			foreach($array as $value)
-			{
-				if($value['ipCount'] > $highest)
-				{
-					$highest = $value['ipCount'];
-				}
-			}
+        return $data;
+    }
+    
+    private function graphDaily()
+    {
+        if ($this->config->item('disable_visitor_graph'))
+        {
+            return false;
+        }
+    
+        $cache = $this->cache->get("dashboard_daily");
+    
+        if ($cache !== false)
+        {
+            $data = $cache;
+        } else {
+            $rows = $this->dashboard_model->getGraph(true);
+    
+            $fullMonth = array();
+    
+            foreach ($rows as $row)
+            {
+                $expld = explode("-", $row["date"]);
+    
+                $year = $expld[0];
+                $month = $expld[1];
+                $day = $expld[2];
+    
+                $date = new DateTime();
+                $fullDays = array();
+                for ($i = 1; $i <= 31; $i++)
+                {
+                    if ($date->format("Y") == $year && $date->format("m") == $month && $i > $date->format("d"))
+                    {
+                        continue;
+                    }
+    
+                    $fullDays[($i < 10 ? "0" : "") . $i] = 0;
+                }
+    
+                if (!isset($fullMonth[$year]["day"]))
+                {
+                    $fullMonth[$year]["day"] = $fullDays;
+                }
+    
+                if (isset($fullMonth[$year]["day"][$day]))
+                {
+                    $fullMonth[$year]["day"][$day] += $row["ipCount"];
+                }
+            }
+    
+            $currentYear = date('Y');
+            $currentMonth = date('m');
+    
+            $data = $fullMonth[$currentYear]["day"];
 
-			return $highest;
-		}
-		else
-		{
-			return false;
-		}
-	}
+            if (!isset($data))
+            {
+                $data = array();
+            }
 
-	private function arrayFormat($array)
-	{
-		if($array)
-		{
-			$output = "";
-			$first = true;
+            $this->cache->save("dashboard_daily", $data, 60 * 60 * 24);
+        }
 
-			foreach($array as $month)
-			{
-				if($first)
-				{
-					$first = false;
-					$output .= $month['ipCount'];
-				}
-				else
-				{
-					$output .= ",".$month['ipCount'];
-				}
-			}
+        return $data;
+    }
 
-			return $output;
-		}
-		else
-		{
-			return false;
-		}
-	}
+    public function checkSoap()
+    {
+        if (!extension_loaded('soap'))
+        {
+            show_error('SOAP not installed');
+        }
 
-	private function getLastDate($array)
-	{
-		if($array)
-		{
-			$value = preg_replace("/-/", " / ", $array[count($array)-1]['date']);
+        $realms = $this->realms->getRealms();
 
-			return preg_replace("/ \/ [0-9]*$/", "", $value);
-		}
-		else
-		{
-			return false;
-		}
-	}
-
-	private function getFirstDate($array)
-	{
-		if($array)
-		{
-			$value = preg_replace("/-/", " / ", $array[0]['date']);
-
-			return preg_replace("/ \/ [0-9]*$/", "", $value);
-		}
-		else
-		{
-			return false;
-		}
-	}
+        foreach ($realms as $realm)
+        {
+            if ($realm->isOnline(true))
+            {
+                $this->realms->getRealm($realm->getId())->getEmulator()->sendCommand('.server info');
+            }
+        }
+    }
 	
-	public function enable($moduleName)
-	{
-		requirePermission("toggleModules");
+	public function realmstatus()
+    {
+        $data = array(
+			"realmstatus" => $this->realms->getRealms(),
+        );
 
-		$this->changeManifest($moduleName, "enabled", true);
+		$out = $this->template->loadPage("ajax_files/realmstatus.tpl", $data);
 
-		die('SUCCESS');
-	}
-	
-	public function disable($moduleName)
-	{
-		requirePermission("toggleModules");
+        die($out);
+    }
 
-		if(!in_array($moduleName, $this->coreModules))
-		{
-			$this->changeManifest($moduleName, "enabled", false);
+    public function destroySession()
+    {
+        $this->session->unset_userdata('admin_access');
+    }
 
-			die('SUCCESS');
-		}
-		else
-		{
-			die('CORE');
-		}
-	}
-	
-	public function changeManifest($moduleName, $setting, $newValue)
-	{
-		requirePermission("editModuleConfigs");
+    public function notifications($count = false)
+    {
+        if ($count)
+        {
+            $notifications = $this->cms_model->getNotifications($this->user->getId(), true);
 
-		$filePath = "application/modules/".$moduleName."/manifest.json";
-		$manifest = json_decode(file_get_contents($filePath), true);
+            echo $notifications;
+			die();
+        } else {
+            $notifications = $this->cms_model->getNotifications($this->user->getId(), false);
 
-		// Replace the setting with the newValue
-		$manifest[$setting] = $newValue;
+            $data = array(
+                'notifications' => $notifications,
+            );
 
-		$prettyJSON = new PrettyJSON($manifest);
+            $out = $this->template->loadPage("notifications.tpl", $data);
 
-		// Rewrite the file with the new data
-		$fileHandle = fopen($filePath, "w");
-		fwrite($fileHandle, $prettyJSON->get());
-		fclose($fileHandle);
-	}
+            echo $out;
+			die();
+        }
+    }
 
-	public function saveHeader()
-	{
-		requirePermission("changeThemeHeader");
-		
-		$header_url = $this->input->post('header_url');
+    public function markReadNotification($id, $all = false)
+    {
+        if ($all)
+        {
+            $uid = $this->user->getId();
+            $this->cms_model->setReadNotification($id, $uid, true);
+            die('yes');
+        } else {
+            $uid = $this->user->getId();
+            $this->cms_model->setReadNotification($id, $uid, false);
+            die('yes');
+        }
+    }
 
-		require_once('application/libraries/ConfigEditor.php');
-		
-		$fusionConfig = new ConfigEditor("application/config/fusion.php");
+    private function flush_uptime($realms)
+    {
+        $uptimes = array();
+        foreach ($realms as $k => $realm) {
+            $uptimes[$realm->getId()] = $this->uptime($realm->getId());
+        }
+        return $uptimes;
+    }
 
-		$fusionConfig->set('header_url', $header_url);
+    private function uptime($realm_id)
+    {
+        $this->connection = $this->load->database("account", true);
+        $this->connection->where('realmid', $realm_id);
+        $query = $this->connection->get('uptime');
+        $last = $query->last_row('array');
+        if (isset($last)) {
+            $first_date = new DateTime(date('Y-m-d h:i:s', $last['starttime']));
+            $second_date = new DateTime(date('Y-m-d h:i:s'));
 
-		$fusionConfig->save();
-	}
+            $difference = $first_date->diff($second_date);
+
+            return $this->format_interval($difference);
+        } else {
+            return "Offline";
+        }
+    }
+
+    private function format_interval(DateInterval $interval)
+    {
+        $result = "";
+        if ($interval->y) {
+            $result .= $interval->format("<span>%y</span>y ");
+        }
+        if ($interval->m) {
+            $result .= $interval->format("<span>%m</span>m ");
+        }
+        if ($interval->d) {
+            $result .= $interval->format("<span>%d</span>d ");
+        }
+        if ($interval->h) {
+            $result .= $interval->format("<span>%h</span>h ");
+        }
+        if ($interval->i) {
+            $result .= $interval->format("<span>%i</span>m ");
+        }
+        if ($interval->s) {
+            $result .= $interval->format("<span>%s</span>s ");
+        }
+
+        return $result;
+    }
 }

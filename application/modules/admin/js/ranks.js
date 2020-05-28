@@ -28,18 +28,30 @@ var Ranks = {
 	{
 		var identifier = this.identifier,
 			removeLink = this.Links.remove;
-
-		UI.confirm("Do you really want to delete this rank?", "Yes", function()
-		{
+		
+		Swal.fire({
+			title: 'Do you really want to delete this rank?',
+			text: "You won't be able to revert this!",
+			icon: 'warning',
+			showCancelButton: true,
+			confirmButtonColor: '#3085d6',
+			cancelButtonColor: '#d33',
+			confirmButtonText: 'Yes, delete it!'
+		}).then((result) => {
+		if (result.isConfirmed) {
 			$("#" + identifier + "_count").html(parseInt($("#" + identifier + "_count").html()) - 1);
 
-			$(element).parents("li").slideUp(	300, function()
+			$(element).parents("tr").slideUp(300, function()
 			{
 				$(this).remove();
 			});
 
-			$.get(Config.URL + removeLink + id);
-		});
+			$.get(Config.URL + removeLink + id, function(data)
+			{
+				console.log(data);
+			});
+		}
+		})
 	},
 
 	/**

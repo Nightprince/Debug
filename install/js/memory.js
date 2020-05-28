@@ -26,7 +26,7 @@ var Memory = (function()
 			"server_name",
 			"realmlist",
 			"security_code",
-			"expansion",
+			"max_expansion",
 			"keywords",
 			"description",
 			"analytics",

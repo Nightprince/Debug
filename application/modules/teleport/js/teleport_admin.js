@@ -30,40 +30,29 @@ var Teleport = {
 		var identifier = this.identifier,
 			removeLink = this.Links.remove;
 
-		UI.confirm("Do you really want to delete this location?", "Yes", function()
-		{
+		Swal.fire({
+			title: 'Do you really want to delete this location?',
+			text: "You won't be able to revert this!",
+			icon: 'warning',
+			showCancelButton: true,
+			confirmButtonColor: '#3085d6',
+			cancelButtonColor: '#d33',
+			confirmButtonText: 'Yes, delete it!'
+		}).then((result) => {
+		if (result.isConfirmed) {
 			$("#" + identifier + "_count").html(parseInt($("#" + identifier + "_count").html()) - 1);
 
-			$(element).parents("li").slideUp(300, function()
+			$(element).parents("tr").slideUp(300, function()
 			{
 				$(this).remove();
 			});
 
-			$.get(Config.URL + removeLink + id);
-		});
-	},
-
-	/**
-	 * Toggle between the "add" form and the list
-	 */
-	add: function()
-	{
-		var id = this.identifier;
-
-		if($("#add_" + id).is(":visible"))
-		{
-			$("#add_" + id).fadeOut(150, function()
+			$.get(Config.URL + removeLink + id, function(data)
 			{
-				$("#main_" + id).fadeIn(150);
+				console.log(data);
 			});
 		}
-		else
-		{
-			$("#main_" + id).fadeOut(150, function()
-			{
-				$("#add_" + id).fadeIn(150);
-			});
-		}
+		})
 	},
 
 	/**
@@ -72,25 +61,37 @@ var Teleport = {
 	 */
 	create: function(form)
 	{
-		var values = {csrf_token_name: Config.CSRF};
+		var values = {
+			name:$("#name").val(),
+			description:$("#description").val(),
+			x:$("#x").val(),
+			y:$("#y").val(),
+			z:$("#z").val(),
+			orientation:$("#orientation").val(),
+			mapId:$("#mapId").val(),
+			vpCost:$("#vpCost").val(),
+			dpCost:$("#dpCost").val(),
+			goldCost:$("#goldCost").val(),
+			realm:$("#realm").val(),
+			required_faction:$("#required_faction").val(),
+			csrf_token_name: Config.CSRF
+		};
 
-		$(form).find("input, select").each(function()
+		$.post(Config.URL + this.Links.create, values, function(response)
 		{
-			if($(this).attr("type") != "submit")
+			if(response == "yes")
 			{
-				values[$(this).attr("name")] = $(this).val();
+				window.location = Config.URL + "teleport/admin";
 			}
-		});
-
-		if(this.fusionEditor != false)
-		{
-			values[this.fusionEditor.replace("#", "")] = $(this.fusionEditor).html();
-		}
-
-		$.post(Config.URL + this.Links.create, values, function(data)
-		{
-			console.log(data);
-			eval(data);
+			else
+			{
+				console.log(values);
+				Swal.fire({
+					icon: 'error',
+					title: 'Oops...',
+					text: response,
+				})
+			}
 		});
 	},
 
@@ -100,25 +101,37 @@ var Teleport = {
 	 */
 	save: function(form, id)
 	{
-		var values = {csrf_token_name: Config.CSRF};
+		var values = {
+			name:$("#name").val(),
+			description:$("#description").val(),
+			x:$("#x").val(),
+			y:$("#y").val(),
+			z:$("#z").val(),
+			orientation:$("#orientation").val(),
+			mapId:$("#mapId").val(),
+			vpCost:$("#vpCost").val(),
+			dpCost:$("#dpCost").val(),
+			goldCost:$("#goldCost").val(),
+			realm:$("#realm").val(),
+			required_faction:$("#required_faction").val(),
+			csrf_token_name: Config.CSRF
+		};
 
-		$(form).find("input, select").each(function()
+		$.post(Config.URL + this.Links.save + id, values, function(response)
 		{
-			if($(this).attr("type") != "submit")
+			if(response == "yes")
 			{
-				values[$(this).attr("name")] = $(this).val();
+				window.location = Config.URL + "teleport/admin";
 			}
-		});
-
-		if(this.fusionEditor != false)
-		{
-			values[this.fusionEditor.replace("#", "")] = $(this.fusionEditor).html();
-		}
-
-		$.post(Config.URL + this.Links.save + id, values, function(data)
-		{
-			console.log(data);
-			eval(data);
+			else
+			{
+				console.log(values);
+				Swal.fire({
+					icon: 'error',
+					title: 'Oops...',
+					text: response,
+				})
+			}
 		});
 	},
 

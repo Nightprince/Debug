@@ -1,6 +1,7 @@
 {if $visitors}
 	{foreach from=$visitors key=user_id item=nickname}
-		<a href="{$url}profile/{$user_id}">{$nickname}</a>,
+		<a href="{$url}profile/{$user_id}">{$nickname}</a>
+		{if count(array($visitors)) > 1},{/if}
 	{/foreach}
 {/if}
 

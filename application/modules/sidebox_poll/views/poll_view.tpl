@@ -39,7 +39,7 @@
 
 						$("#poll_answers").fadeOut(300, function()
 						{
-							$(this).html("<center><img src='" + Config.image_path + "ajax.gif' /></center>").fadeIn(150, function()
+							$(this).html('<i class="fas fa-spinner fa-pulse"></i>').fadeIn(150, function()
 							{
 								$.post(Config.URL + "sidebox_poll/poll/vote/" + questionid + "/" + id, {csrf_token_name: Config.CSRF}, function(data)
 								{
@@ -125,8 +125,6 @@
 			<div style="height:10px"></div>
 		{/if}
 	{else}
-		<center>{lang("no_answers", "sidebox_poll")}</center>
+		<center>{lang("no_poll", "sidebox_poll")}</center>
 	{/if}
-{else}
-	<center{lang("no_poll", "sidebox_poll")}</center>
 {/if}
