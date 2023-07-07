@@ -15,7 +15,6 @@ if (!defined('BASEPATH')) {
  * @link    https://github.com/FusionWowCMS/FusionCMS
  */
  
-require_once APPPATH . 'third_party/Smarty/Smarty.class.php';
 
 class CI_Smarty extends Smarty
 {
